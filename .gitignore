@@ -1,0 +1,17 @@
+obj
+bin
+bin/*
+scratch
+scratch/*
+deploy
+deploy/*
+_ReSharper.*
+*.csproj.user
+*.ReSharper.user
+*.suo
+*.cache
+*.Cache
+~$*
+Thumbs.db
+*.cache
+.svn

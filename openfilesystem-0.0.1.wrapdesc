@@ -1,0 +1,4 @@
+description
+ OpenFileSystem provides an abstraction over the .net IO subsystem
+ and provides for pluggable implementations.
+depends openwrap 
