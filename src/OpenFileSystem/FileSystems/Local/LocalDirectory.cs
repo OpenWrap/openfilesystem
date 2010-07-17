@@ -7,22 +7,29 @@ namespace OpenFileSystem.IO.FileSystem.Local
 {
     public class LocalDirectory : AbstractDirectory, IDirectory, IEquatable<IDirectory>
     {
-        readonly DirectoryInfo _di;
+        protected DirectoryInfo DirectoryInfo { get; private set; }
 
         public LocalDirectory(DirectoryInfo directory)
         {
-            _di = directory;
-            Path = new LocalPath(NormalizeDirectoryPath(_di.FullName));
+            DirectoryInfo = directory;
+            Path = new LocalPath(NormalizeDirectoryPath(DirectoryInfo.FullName));
         }
 
         public LocalDirectory(string directoryPath)
             : this(new DirectoryInfo(directoryPath))
         {
         }
-
+        protected virtual LocalDirectory CreateDirectory(DirectoryInfo di)
+        {
+            return new LocalDirectory(di);
+        }
+        protected virtual LocalDirectory CreateDirectory(string path)
+        {
+            return new LocalDirectory(path);
+        }
         public bool Exists
         {
-            get { return _di.Exists; }
+            get { return DirectoryInfo.Exists; }
         }
 
         public IFileSystem FileSystem
@@ -32,12 +39,12 @@ namespace OpenFileSystem.IO.FileSystem.Local
 
         public string Name
         {
-            get { return _di.Name; }
+            get { return DirectoryInfo.Name; }
         }
 
-        public IDirectory Parent
+        public virtual IDirectory Parent
         {
-            get { return _di.Parent == null ? null : new LocalDirectory(_di.Parent); }
+            get { return DirectoryInfo.Parent == null ? null : CreateDirectory(DirectoryInfo.Parent); }
         }
 
         public IPath Path
@@ -47,48 +54,55 @@ namespace OpenFileSystem.IO.FileSystem.Local
 
         public void Add(IFile file)
         {
-            File.Copy(file.Path.FullPath, System.IO.Path.Combine(_di.FullName, file.Name));
+            File.Copy(file.Path.FullPath, System.IO.Path.Combine(DirectoryInfo.FullName, file.Name));
         }
 
-        public IEnumerable<IDirectory> Directories(string filter)
+        public virtual bool IsHardLink { get { return false; } }
+
+        public virtual IDirectory LinkTo(string path)
         {
-            return _di.GetDirectories(filter).Select(x => (IDirectory)new LocalDirectory(x));
+            throw new NotImplementedException();
+        }
+
+        public virtual IEnumerable<IDirectory> Directories(string filter)
+        {
+            return DirectoryInfo.GetDirectories(filter).Select(x => (IDirectory)CreateDirectory(x));
         }
 
         public IEnumerable<IFile> Files()
         {
-            return _di.GetFiles().Select(x => (IFile)new LocalFile(x.FullName));
+            return DirectoryInfo.GetFiles().Select(x => (IFile)new LocalFile(x.FullName));
         }
 
         public IEnumerable<IFile> Files(string filter)
         {
-            return _di.GetFiles(filter).Select(x => (IFile)new LocalFile(x.FullName));
+            return DirectoryInfo.GetFiles(filter).Select(x => (IFile)new LocalFile(x.FullName));
         }
 
-        public IDirectory GetDirectory(string directoryName)
+        public virtual IDirectory GetDirectory(string directoryName)
         {
-            return new LocalDirectory(System.IO.Path.Combine(_di.FullName, directoryName));
+            return CreateDirectory(System.IO.Path.Combine(DirectoryInfo.FullName, directoryName));
         }
 
         public IFile GetFile(string fileName)
         {
-            return new LocalFile(System.IO.Path.Combine(_di.FullName, fileName));
+            return new LocalFile(System.IO.Path.Combine(DirectoryInfo.FullName, fileName));
         }
 
-        IEnumerable<IDirectory> IDirectory.Directories()
+        public virtual IEnumerable<IDirectory> Directories()
         {
-            return _di.GetDirectories().Select(x => (IDirectory)new LocalDirectory(x));
+            return DirectoryInfo.GetDirectories().Select(x => (IDirectory)CreateDirectory(x));
         }
 
-        public void Delete()
+        public virtual void Delete()
         {
-            if (_di.Exists)
-                _di.Delete(true);
+            if (DirectoryInfo.Exists)
+                DirectoryInfo.Delete(true);
         }
 
-        public IDirectory Create()
+        public virtual IDirectory Create()
         {
-            _di.Create();
+            DirectoryInfo.Create();
             return this;
         }
 

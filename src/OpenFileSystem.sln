@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenFileSystem", "OpenFileSystem\OpenFileSystem.csproj", "{0174E0E7-B915-46A9-B3D8-D62007E55694}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenFileSystem.Tests", "OpenFileSystem.Tests\OpenFileSystem.Tests.csproj", "{A5EB0BFC-609D-46CB-8FFB-F8F3065ABB11}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +15,10 @@ Global
 		{0174E0E7-B915-46A9-B3D8-D62007E55694}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0174E0E7-B915-46A9-B3D8-D62007E55694}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0174E0E7-B915-46A9-B3D8-D62007E55694}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5EB0BFC-609D-46CB-8FFB-F8F3065ABB11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5EB0BFC-609D-46CB-8FFB-F8F3065ABB11}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5EB0BFC-609D-46CB-8FFB-F8F3065ABB11}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5EB0BFC-609D-46CB-8FFB-F8F3065ABB11}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

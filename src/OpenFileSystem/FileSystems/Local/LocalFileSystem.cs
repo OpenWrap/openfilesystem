@@ -1,34 +1,63 @@
 ﻿using System;
 using System.IO;
+using OpenFileSystem.IO.FileSystems.Local.Unix;
+using OpenFileSystem.IO.FileSystems.Local.Win32;
 
 namespace OpenFileSystem.IO.FileSystem.Local
 {
-    public class LocalFileSystem : AbstractFileSystem
+    public abstract class LocalFileSystem : AbstractFileSystem
     {
-        static readonly LocalFileSystem _instance = new LocalFileSystem();
-        public static IFileSystem Instance { get { return _instance; }}
-        private LocalFileSystem()
+        static LocalFileSystem _instance;
+        static readonly object _syncRoot = new object();
+        public static IFileSystem Instance
+        {
+            get
+            {
+                if (_instance == null)
+                    lock (_syncRoot)
+                        if (_instance == null)
+                            _instance = CreatePlatformSpecificInstance();
+                return _instance;
+            }
+        }
+
+        static LocalFileSystem CreatePlatformSpecificInstance()
+        {
+            var platformId = (int)Environment.OSVersion.Platform;
+            if (platformId == (int)PlatformID.Win32NT)
+                return CreateWin32FileSystem();
+            else if (platformId == 4 || platformId == 128 || platformId == (int) PlatformID.MacOSX)
+                return UnixFileSystem();
+            throw new NotSupportedException("Platform not supported");
+        }
+
+        static LocalFileSystem CreateWin32FileSystem()
+        {
+            return new Win32FileSystem();
+        }
+
+        static LocalFileSystem UnixFileSystem()
+        {
+            return new UnixFileSystem();
+        }
+
+        protected LocalFileSystem()
         {
             
         }
         public override IDirectory CreateDirectory(string path)
         {
-            return new LocalDirectory(path).Create();
+            return GetDirectory(path).Create();
         }
 
         public override ITemporaryDirectory CreateTempDirectory()
         {
-            return new TemporaryLocalDirectory(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()));
+            return new TemporaryDirectory(CreateDirectory(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())));
         }
 
         public override ITemporaryFile CreateTempFile()
         {
             return new TemporaryLocalFile(Path.GetTempFileName());
-        }
-
-        public override IDirectory GetDirectory(string directoryPath)
-        {
-            return new LocalDirectory(Path.GetFullPath(Path.Combine(Environment.CurrentDirectory,directoryPath)));
         }
 
         public override IFile GetFile(string filePath)
@@ -41,9 +70,9 @@ namespace OpenFileSystem.IO.FileSystem.Local
             return new LocalPath(path);
         }
 
-        public override IDirectory GetTempDirectory()
-        {
-            return new LocalDirectory(Path.GetTempPath());
-        }
+        //public override IDirectory GetTempDirectory()
+        //{
+        //    return new LocalDirectory(Path.GetTempPath());
+        //}
     }
 }

@@ -11,5 +11,7 @@ namespace OpenFileSystem.IO
         IEnumerable<IFile> Files(string filter);
         IEnumerable<IDirectory> Directories(string filter);
         void Add(IFile file);
+        bool IsHardLink { get; }
+        IDirectory LinkTo(string path);
     }
 }

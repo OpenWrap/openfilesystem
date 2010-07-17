@@ -8,7 +8,7 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
 {
     public class InMemoryDirectory : AbstractDirectory, IDirectory, IEquatable<IDirectory>
     {
-
+        private InMemoryDirectory _source;
 
         public bool Equals(IDirectory other)
         {
@@ -32,6 +32,7 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
 
         public InMemoryDirectory(string directoryPath, params IFileSystemItem[] children)
         {
+            _source = this;
             directoryPath = NormalizeDirectoryPath(directoryPath);
             Path = new LocalPath(directoryPath);
 
@@ -157,6 +158,21 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
         public void Add(IFile file)
         {
             ChildFiles.Add((InMemoryFile)file);
+        }
+
+        public bool IsHardLink { get; private set; }
+
+        public IDirectory LinkTo(string path)
+        {
+            
+            var linkDirectory = GetDirectory(path) as InMemoryDirectory;
+            if (linkDirectory.Exists)
+                throw new IOException(string.Format("Cannot create link at location '{0}', a directory already exists.",path));
+            linkDirectory.ChildDirectories = this.ChildDirectories;
+            linkDirectory.ChildFiles = this.ChildFiles;
+            linkDirectory.IsHardLink = true;
+            linkDirectory.Exists = true;
+            return linkDirectory;
         }
     }
 }
