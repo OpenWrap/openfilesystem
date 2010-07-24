@@ -61,9 +61,12 @@
     <Compile Include="FileSystems\Local\LocalFile.cs" />
     <Compile Include="FileSystems\Local\LocalFileSystem.cs" />
     <Compile Include="FileSystems\Local\LocalPath.cs" />
-    <Compile Include="FileSystems\Local\TemporaryLocalDirectory.cs" />
+    <Compile Include="FileSystems\Local\TemporaryDirectory.cs" />
     <Compile Include="FileSystems\Local\TemporaryLocalFile.cs" />
+    <Compile Include="FileSystems\Local\Unix\UnixDirectory.cs" />
     <Compile Include="FileSystems\Local\Unix\UnixFileSystem.cs" />
+    <Compile Include="FileSystems\Local\Win32\Interop\JunctionPoint.cs" />
+    <Compile Include="FileSystems\Local\Win32\Win32Directory.cs" />
     <Compile Include="FileSystems\Local\Win32\Win32FileSystem.cs" />
     <Compile Include="FileSystems\NonDisposableStream.cs" />
     <Compile Include="IDirectory.cs" />

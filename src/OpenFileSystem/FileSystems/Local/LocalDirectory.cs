@@ -64,6 +64,14 @@ namespace OpenFileSystem.IO.FileSystem.Local
             throw new NotImplementedException();
         }
 
+        public virtual IDirectory Target
+        {
+            get
+            {
+                return this;
+            }
+        }
+
         public virtual IEnumerable<IDirectory> Directories(string filter)
         {
             return DirectoryInfo.GetDirectories(filter).Select(x => (IDirectory)CreateDirectory(x));

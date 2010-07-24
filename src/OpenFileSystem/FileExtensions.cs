@@ -11,7 +11,7 @@ namespace OpenFileSystem.IO
             directory.Add(file);
         }
 
-        public static T EnsureExists<T>(this T directory) where T:IFileSystemItem<T>
+        public static T MustExist<T>(this T directory) where T:IFileSystemItem<T>
         {
             if (!directory.Exists)
                 directory.Create();
@@ -33,7 +33,7 @@ namespace OpenFileSystem.IO
         public static IDirectory GetOrCreateDirectory(this IDirectory directory, params string[] childDirectories)
         {
             return childDirectories.Aggregate(directory,
-                                              (current, childDirectoryName) => EnsureExists(current.GetDirectory(childDirectoryName)));
+                                              (current, childDirectoryName) => MustExist(current.GetDirectory(childDirectoryName)));
         }
 
         public static Stream OpenRead(this IFile file)

@@ -165,7 +165,7 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
         public IDirectory LinkTo(string path)
         {
             
-            var linkDirectory = GetDirectory(path) as InMemoryDirectory;
+            var linkDirectory = (InMemoryDirectory)GetDirectory(path);
             if (linkDirectory.Exists)
                 throw new IOException(string.Format("Cannot create link at location '{0}', a directory already exists.",path));
             linkDirectory.ChildDirectories = this.ChildDirectories;
@@ -173,6 +173,11 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
             linkDirectory.IsHardLink = true;
             linkDirectory.Exists = true;
             return linkDirectory;
+        }
+
+        public IDirectory Target
+        {
+            get { return this; }
         }
     }
 }

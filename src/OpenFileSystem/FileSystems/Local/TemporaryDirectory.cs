@@ -69,6 +69,11 @@ namespace OpenFileSystem.IO.FileSystem.Local
             
         }
 
+        public IDirectory Target
+        {
+            get { return UnderlyingDirectory.Target; }
+        }
+
         public IPath Path
         {
             get { return UnderlyingDirectory.Path; }

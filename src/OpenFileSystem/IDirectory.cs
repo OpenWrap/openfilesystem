@@ -13,5 +13,6 @@ namespace OpenFileSystem.IO
         void Add(IFile file);
         bool IsHardLink { get; }
         IDirectory LinkTo(string path);
+        IDirectory Target { get; }
     }
 }
