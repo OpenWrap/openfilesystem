@@ -80,7 +80,10 @@ namespace OpenFileSystem.IO.FileSystem.Local
         {
             return (_normalizedPath != null ? _normalizedPath.GetHashCode() : 0);
         }
-
+        public override string ToString()
+        {
+            return _normalizedPath;
+        }
         public static bool operator ==(LocalPath left, LocalPath right)
         {
             return Equals(left, right);

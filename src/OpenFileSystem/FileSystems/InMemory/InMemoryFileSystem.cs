@@ -28,7 +28,16 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
                 root.ChildDirectories.Add(directory);
                 directory.Create();
             }
-
+            Action<IEnumerable<IDirectory>> assignFs = null;
+            assignFs = dirs =>
+            {
+                foreach (var dir in dirs.OfType<InMemoryDirectory>())
+                {
+                    dir.FileSystem = this;
+                    assignFs(dir.Directories());
+                }
+            };
+            assignFs(childDirectories);
         }
         
         InMemoryDirectory GetRoot(string path)
@@ -36,7 +45,10 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
             InMemoryDirectory directory;
             if (!Directories.TryGetValue(path, out directory))
             {
-                Directories.Add(path, directory = new InMemoryDirectory(path));
+                Directories.Add(path, directory = new InMemoryDirectory(path)
+                {
+                        FileSystem = this
+                });
             }
             return directory;
         }

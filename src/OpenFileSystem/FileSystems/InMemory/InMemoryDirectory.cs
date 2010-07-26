@@ -8,13 +8,50 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
 {
     public class InMemoryDirectory : AbstractDirectory, IDirectory, IEquatable<IDirectory>
     {
-        private InMemoryDirectory _source;
+        InMemoryDirectory _source;
 
-        public bool Equals(IDirectory other)
+        public InMemoryDirectory(string directoryPath, params IFileSystemItem[] children)
         {
-            if (ReferenceEquals(null, other)) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return Equals(other.Path, Path);
+            _source = this;
+            directoryPath = NormalizeDirectoryPath(directoryPath);
+            Path = new LocalPath(directoryPath);
+
+            ChildDirectories = new List<InMemoryDirectory>();
+            ChildFiles = new List<InMemoryFile>();
+
+            foreach (var childDirectory in children.OfType<InMemoryDirectory>())
+            {
+                childDirectory.Parent = this;
+                childDirectory.Create();
+                ChildDirectories.Add(childDirectory);
+            }
+            foreach (var childFile in children.OfType<InMemoryFile>())
+            {
+                childFile.Parent = this;
+                childFile.Path = Path.Combine(childFile.Path.FullPath);
+                childFile.Create();
+                ChildFiles.Add(childFile);
+            }
+        }
+
+        public List<InMemoryDirectory> ChildDirectories { get; set; }
+        public List<InMemoryFile> ChildFiles { get; set; }
+
+        public bool Exists { get; set; }
+        public IFileSystem FileSystem { get; set; }
+        public bool IsHardLink { get; private set; }
+
+        public string Name
+        {
+            get { return new DirectoryInfo(Path.FullPath).Name; }
+        }
+
+        public IDirectory Parent { get; set; }
+        public IPath Path { get; private set; }
+
+        public IDirectory Target
+        {
+            get { return this; }
         }
 
         public override bool Equals(object obj)
@@ -30,73 +67,31 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
             return Path.GetHashCode();
         }
 
-        public InMemoryDirectory(string directoryPath, params IFileSystemItem[] children)
+        public void Add(IFile file)
         {
-            _source = this;
-            directoryPath = NormalizeDirectoryPath(directoryPath);
-            Path = new LocalPath(directoryPath);
-
-            ChildDirectories = new List<InMemoryDirectory>();
-            ChildFiles = new List<InMemoryFile>();
-
-            foreach(var childDirectory in children.OfType<InMemoryDirectory>())
-            {
-                childDirectory.Parent = this;
-                childDirectory.Create();
-                ChildDirectories.Add(childDirectory);
-            }
-            foreach(var childFile in children.OfType<InMemoryFile>())
-            {
-                childFile.Parent = this;
-                childFile.Path = Path.Combine(childFile.Path.FullPath);
-                childFile.Create();
-                ChildFiles.Add(childFile);
-            }
+            ChildFiles.Add((InMemoryFile)file);
         }
 
-        public IDirectory Create()
+        public IEnumerable<IDirectory> Directories()
         {
-            Exists = true;
-            if (Parent != null && !Parent.Exists)
-                Parent.Create();
-            return this;
+            return ChildDirectories.Where(x => x.Exists).Cast<IDirectory>();
         }
 
-        public IPath Path
+        public IEnumerable<IDirectory> Directories(string filter)
         {
-            get;
-            private set;
+            var filterRegex = filter.Wildcard();
+            return ChildDirectories.Where(x => x.Exists && filterRegex.IsMatch(x.Name)).Cast<IDirectory>();
         }
 
-        public IDirectory Parent
+        public IEnumerable<IFile> Files()
         {
-            get;
-            set;
+            return ChildFiles.Where(x => x.Exists).Cast<IFile>();
         }
 
-        public IFileSystem FileSystem
+        public IEnumerable<IFile> Files(string filter)
         {
-            get;
-            set;
-        }
-
-        public bool Exists
-        {
-            get;
-            set;
-        }
-
-        public string Name
-        {
-            get { return new DirectoryInfo(Path.FullPath).Name; }
-        }
-
-        public void Delete()
-        {
-            foreach(var childDirectory in ChildDirectories.Copy())
-                childDirectory.Delete();
-
-            Exists = false;
+            var filterRegex = filter.Wildcard();
+            return ChildFiles.Where(x => x.Exists && filterRegex.IsMatch(x.Name)).Cast<IFile>();
         }
 
         public IDirectory GetDirectory(string directoryName)
@@ -105,14 +100,15 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
                 return FileSystem.GetDirectory(directoryName);
 
             var inMemoryDirectory =
-                ChildDirectories.FirstOrDefault(x => x.Name == directoryName);
+                    ChildDirectories.FirstOrDefault(x => x.Name == directoryName);
 
 
             if (inMemoryDirectory == null)
             {
                 inMemoryDirectory = new InMemoryDirectory(System.IO.Path.Combine(Path.FullPath, directoryName))
                 {
-                    Parent = this
+                        Parent = this,
+                        FileSystem = this.FileSystem
                 };
                 ChildDirectories.Add(inMemoryDirectory);
             }
@@ -129,58 +125,47 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
                 file = new InMemoryFile(Path.Combine(fileName).FullPath) { Parent = this };
                 ChildFiles.Add(file);
             }
+            file.FileSystem = this.FileSystem;
+
             return file;
         }
 
-        public IEnumerable<IFile> Files()
-        {
-            return ChildFiles.Where(x=>x.Exists).Cast<IFile>();
-        }
-
-        public List<InMemoryFile> ChildFiles { get; set; }
-
-        public IEnumerable<IDirectory> Directories()
-        {
-            return ChildDirectories.Where(x => x.Exists).Cast<IDirectory>();
-        }
-
-        public List<InMemoryDirectory> ChildDirectories { get; set; }
-
-        public IEnumerable<IFile> Files(string filter)
-        {
-            var filterRegex = filter.Wildcard();
-            return ChildFiles.Where(x => x.Exists && filterRegex.IsMatch(x.Name)).Cast<IFile>();
-        }
-
-        public IEnumerable<IDirectory> Directories(string filter)
-        {
-            var filterRegex = filter.Wildcard();
-            return ChildDirectories.Where(x => x.Exists && filterRegex.IsMatch(x.Name)).Cast<IDirectory>();
-        }
-
-        public void Add(IFile file)
-        {
-            ChildFiles.Add((InMemoryFile)file);
-        }
-
-        public bool IsHardLink { get; private set; }
-
         public IDirectory LinkTo(string path)
         {
-            
             var linkDirectory = (InMemoryDirectory)GetDirectory(path);
             if (linkDirectory.Exists)
-                throw new IOException(string.Format("Cannot create link at location '{0}', a directory already exists.",path));
+                throw new IOException(string.Format("Cannot create link at location '{0}', a directory already exists.", path));
             linkDirectory.ChildDirectories = this.ChildDirectories;
             linkDirectory.ChildFiles = this.ChildFiles;
+            linkDirectory.FileSystem = this.FileSystem;
             linkDirectory.IsHardLink = true;
             linkDirectory.Exists = true;
             return linkDirectory;
         }
 
-        public IDirectory Target
+        public bool Equals(IDirectory other)
         {
-            get { return this; }
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return Equals(other.Path, Path);
+        }
+
+        public void Delete()
+        {
+            if (!IsHardLink)
+            {
+                foreach (var childDirectory in ChildDirectories.Copy())
+                    childDirectory.Delete();
+            }
+            Exists = false;
+        }
+
+        public IDirectory Create()
+        {
+            Exists = true;
+            if (Parent != null && !Parent.Exists)
+                Parent.Create();
+            return this;
         }
     }
 }

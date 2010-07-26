@@ -121,7 +121,7 @@ namespace OpenWrap.Tests.IO
             child.Exists.ShouldBeFalse();
         }
         [Test]
-        public void deleted_child_doesnt_show_up_in_child_directories()
+        public void deleted_child_directory_doesnt_show_up_in_child_directories()
         {
             var dir1 = FileSystem.GetTempDirectory().GetDirectory("test");
             var child = dir1.GetDirectory("test").MustExist();
@@ -129,6 +129,18 @@ namespace OpenWrap.Tests.IO
 
             dir1.Directories().ShouldHaveCountOf(0);
 
+        }
+        [Test]
+        public void deleted_hardlink_doesnt_delete_subfolder()
+        {
+            var dir1 = FileSystem.GetTempDirectory().GetDirectory("test").MustExist();
+            var child = dir1.GetDirectory("test").MustExist();
+
+            var link = dir1.LinkTo(FileSystem.GetTempDirectory().Path.Combine("testLink").FullPath);
+            link.Delete();
+            link.Exists.ShouldBeFalse();
+            dir1.Exists.ShouldBeTrue();
+            child.Exists.ShouldBeTrue();
         }
         protected IFileSystem FileSystem { get; set; }
         protected string CurrentDirectory { get; set; }
