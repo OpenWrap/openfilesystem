@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EnumerableExtensions.cs" />
     <Compile Include="FileExtensions.cs" />
     <Compile Include="FileSystems\AbstractDirectory.cs" />
     <Compile Include="FileSystems\AbstractFileSystem.cs" />

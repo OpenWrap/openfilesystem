@@ -29,7 +29,11 @@ namespace OpenFileSystem.IO.FileSystem.Local
         }
         public bool Exists
         {
-            get { return DirectoryInfo.Exists; }
+            get
+            {
+                DirectoryInfo.Refresh();
+                return DirectoryInfo.Exists;
+            }
         }
 
         public IFileSystem FileSystem
@@ -74,16 +78,19 @@ namespace OpenFileSystem.IO.FileSystem.Local
 
         public virtual IEnumerable<IDirectory> Directories(string filter)
         {
+            DirectoryInfo.Refresh();
             return DirectoryInfo.GetDirectories(filter).Select(x => (IDirectory)CreateDirectory(x));
         }
 
         public IEnumerable<IFile> Files()
         {
+            DirectoryInfo.Refresh();
             return DirectoryInfo.GetFiles().Select(x => (IFile)new LocalFile(x.FullName));
         }
 
         public IEnumerable<IFile> Files(string filter)
         {
+            DirectoryInfo.Refresh();
             return DirectoryInfo.GetFiles(filter).Select(x => (IFile)new LocalFile(x.FullName));
         }
 
@@ -99,17 +106,20 @@ namespace OpenFileSystem.IO.FileSystem.Local
 
         public virtual IEnumerable<IDirectory> Directories()
         {
+            DirectoryInfo.Refresh();
             return DirectoryInfo.GetDirectories().Select(x => (IDirectory)CreateDirectory(x));
         }
 
         public virtual void Delete()
         {
+            DirectoryInfo.Refresh();
             if (DirectoryInfo.Exists)
                 DirectoryInfo.Delete(true);
         }
 
         public virtual IDirectory Create()
         {
+            DirectoryInfo.Refresh();
             DirectoryInfo.Create();
             return this;
         }

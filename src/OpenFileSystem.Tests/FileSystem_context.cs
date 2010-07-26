@@ -110,6 +110,26 @@ namespace OpenWrap.Tests.IO
                 concreteDir.GetFile("test.txt").Exists.ShouldBeTrue();
             }
         }
+
+        [Test]
+        public void delete_parent_deletes_child_folder()
+        {
+            var dir1 = FileSystem.GetTempDirectory().GetDirectory("test");
+            var child = dir1.GetDirectory("test").MustExist();
+            dir1.Delete();
+            dir1.Exists.ShouldBeFalse();
+            child.Exists.ShouldBeFalse();
+        }
+        [Test]
+        public void deleted_child_doesnt_show_up_in_child_directories()
+        {
+            var dir1 = FileSystem.GetTempDirectory().GetDirectory("test");
+            var child = dir1.GetDirectory("test").MustExist();
+            child.Delete();
+
+            dir1.Directories().ShouldHaveCountOf(0);
+
+        }
         protected IFileSystem FileSystem { get; set; }
         protected string CurrentDirectory { get; set; }
     }

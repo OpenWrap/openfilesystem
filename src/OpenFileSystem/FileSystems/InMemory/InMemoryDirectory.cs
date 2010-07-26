@@ -93,6 +93,9 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
 
         public void Delete()
         {
+            foreach(var childDirectory in ChildDirectories.Copy())
+                childDirectory.Delete();
+
             Exists = false;
         }
 
@@ -131,14 +134,14 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
 
         public IEnumerable<IFile> Files()
         {
-            return ChildFiles.Cast<IFile>();
+            return ChildFiles.Where(x=>x.Exists).Cast<IFile>();
         }
 
         public List<InMemoryFile> ChildFiles { get; set; }
 
         public IEnumerable<IDirectory> Directories()
         {
-            return ChildDirectories.Cast<IDirectory>();
+            return ChildDirectories.Where(x => x.Exists).Cast<IDirectory>();
         }
 
         public List<InMemoryDirectory> ChildDirectories { get; set; }
@@ -146,13 +149,13 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
         public IEnumerable<IFile> Files(string filter)
         {
             var filterRegex = filter.Wildcard();
-            return ChildFiles.Cast<IFile>().Where(x => filterRegex.IsMatch(x.Name));
+            return ChildFiles.Where(x => x.Exists && filterRegex.IsMatch(x.Name)).Cast<IFile>();
         }
 
         public IEnumerable<IDirectory> Directories(string filter)
         {
             var filterRegex = filter.Wildcard();
-            return ChildDirectories.Cast<IDirectory>().Where(x => filterRegex.IsMatch(x.Name));
+            return ChildDirectories.Where(x => x.Exists && filterRegex.IsMatch(x.Name)).Cast<IDirectory>();
         }
 
         public void Add(IFile file)
