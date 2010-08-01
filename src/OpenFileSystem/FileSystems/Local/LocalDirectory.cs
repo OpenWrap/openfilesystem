@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace OpenFileSystem.IO.FileSystem.Local
 {
-    public class LocalDirectory : AbstractDirectory, IDirectory, IEquatable<IDirectory>
+    public abstract class LocalDirectory : AbstractDirectory, IDirectory, IEquatable<IDirectory>
     {
         protected DirectoryInfo DirectoryInfo { get; private set; }
 
@@ -19,14 +19,10 @@ namespace OpenFileSystem.IO.FileSystem.Local
             : this(new DirectoryInfo(directoryPath))
         {
         }
-        protected virtual LocalDirectory CreateDirectory(DirectoryInfo di)
-        {
-            return new LocalDirectory(di);
-        }
-        protected virtual LocalDirectory CreateDirectory(string path)
-        {
-            return new LocalDirectory(path);
-        }
+
+        protected abstract LocalDirectory CreateDirectory(DirectoryInfo di);
+        protected abstract LocalDirectory CreateDirectory(string path);
+
         public bool Exists
         {
             get
@@ -63,10 +59,7 @@ namespace OpenFileSystem.IO.FileSystem.Local
 
         public virtual bool IsHardLink { get { return false; } }
 
-        public virtual IDirectory LinkTo(string path)
-        {
-            throw new NotImplementedException();
-        }
+        public abstract IDirectory LinkTo(string path);
 
         public virtual IDirectory Target
         {
@@ -85,13 +78,13 @@ namespace OpenFileSystem.IO.FileSystem.Local
         public IEnumerable<IFile> Files()
         {
             DirectoryInfo.Refresh();
-            return DirectoryInfo.GetFiles().Select(x => (IFile)new LocalFile(x.FullName));
+            return DirectoryInfo.GetFiles().Select(x => (IFile)new LocalFile(x.FullName,CreateDirectory));
         }
 
         public IEnumerable<IFile> Files(string filter)
         {
             DirectoryInfo.Refresh();
-            return DirectoryInfo.GetFiles(filter).Select(x => (IFile)new LocalFile(x.FullName));
+            return DirectoryInfo.GetFiles(filter).Select(x => (IFile)new LocalFile(x.FullName, CreateDirectory));
         }
 
         public virtual IDirectory GetDirectory(string directoryName)
@@ -101,7 +94,7 @@ namespace OpenFileSystem.IO.FileSystem.Local
 
         public IFile GetFile(string fileName)
         {
-            return new LocalFile(System.IO.Path.Combine(DirectoryInfo.FullName, fileName));
+            return new LocalFile(System.IO.Path.Combine(DirectoryInfo.FullName, fileName), CreateDirectory);
         }
 
         public virtual IEnumerable<IDirectory> Directories()

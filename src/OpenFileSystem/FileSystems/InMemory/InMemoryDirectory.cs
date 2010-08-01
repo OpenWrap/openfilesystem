@@ -49,9 +49,11 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
         public IDirectory Parent { get; set; }
         public IPath Path { get; private set; }
 
+        IDirectory _target = null;
         public IDirectory Target
         {
-            get { return this; }
+            get { return _target ?? this; }
+            set { _target = value; }
         }
 
         public override bool Equals(object obj)
@@ -140,6 +142,7 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
             linkDirectory.FileSystem = this.FileSystem;
             linkDirectory.IsHardLink = true;
             linkDirectory.Exists = true;
+            linkDirectory.Target = this;
             return linkDirectory;
         }
 

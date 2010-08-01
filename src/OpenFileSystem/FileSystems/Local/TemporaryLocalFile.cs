@@ -1,11 +1,12 @@
 ﻿using System;
+using System.IO;
 
 namespace OpenFileSystem.IO.FileSystem.Local
 {
     public class TemporaryLocalFile : LocalFile, ITemporaryFile
     {
-        public TemporaryLocalFile(string filePath)
-            : base(filePath)
+        public TemporaryLocalFile(string filePath, Func<DirectoryInfo, IDirectory> directoryFactory)
+            : base(filePath, directoryFactory)
         {
         }
 

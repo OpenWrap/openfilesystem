@@ -57,22 +57,17 @@ namespace OpenFileSystem.IO.FileSystem.Local
 
         public override ITemporaryFile CreateTempFile()
         {
-            return new TemporaryLocalFile(Path.GetTempFileName());
+            return new TemporaryLocalFile(Path.GetTempFileName(), di => CreateDirectory(di.FullName));
         }
 
         public override IFile GetFile(string filePath)
         {
-            return new LocalFile(Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, filePath)));
+            return new LocalFile(Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, filePath)), di=>CreateDirectory(di.FullName));
         }
 
         public override IPath GetPath(string path)
         {
             return new LocalPath(path);
         }
-
-        //public override IDirectory GetTempDirectory()
-        //{
-        //    return new LocalDirectory(Path.GetTempPath());
-        //}
     }
 }

@@ -6,10 +6,12 @@ namespace OpenFileSystem.IO.FileSystem.Local
     public class LocalFile : IFile
     {
         readonly string _filePath;
+        readonly Func<DirectoryInfo, IDirectory> _directoryFactory;
 
-        public LocalFile(string filePath)
+        public LocalFile(string filePath, Func<DirectoryInfo, IDirectory> directoryFactory)
         {
             _filePath = filePath;
+            _directoryFactory = directoryFactory;
             Path = new LocalPath(filePath);
         }
 
@@ -47,7 +49,7 @@ namespace OpenFileSystem.IO.FileSystem.Local
                     var directoryInfo = Directory.GetParent(_filePath);
                     return directoryInfo == null
                                ? null
-                               : new LocalDirectory(directoryInfo.FullName);
+                               : _directoryFactory(directoryInfo);
                 }
                 catch (DirectoryNotFoundException)
                 {

@@ -110,6 +110,18 @@ namespace OpenWrap.Tests.IO
                 concreteDir.GetFile("test.txt").Exists.ShouldBeTrue();
             }
         }
+        [Test]
+        public void link_has_reference_to_target()
+        {
+            using (var tempDir = FileSystem.CreateTempDirectory())
+            {
+                var concreteDir = tempDir.GetDirectory("temp").MustExist();
+                var linkedDir = concreteDir.LinkTo(tempDir.Path.Combine("link").FullPath);
+                linkedDir.Target.ShouldBe(concreteDir);
+                linkedDir.Delete();
+                
+            }
+        }
 
         [Test]
         public void delete_parent_deletes_child_folder()
