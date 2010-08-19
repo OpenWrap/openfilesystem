@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using OpenFileSystem.IO.FileSystems;
 
 namespace OpenFileSystem.IO.FileSystem.Local
 {
@@ -40,15 +41,15 @@ namespace OpenFileSystem.IO.FileSystem.Local
             
         }
 
-        public IEnumerable<IFile> Files(string filter)
+        public IEnumerable<IFile> Files(string filter, SearchScope scope)
         {
-            return UnderlyingDirectory.Files(filter);
+            return UnderlyingDirectory.Files(filter, scope);
             
         }
 
-        public IEnumerable<IDirectory> Directories(string filter)
+        public IEnumerable<IDirectory> Directories(string filter, SearchScope scope)
         {
-            return UnderlyingDirectory.Directories(filter);
+            return UnderlyingDirectory.Directories(filter, scope);
             
         }
 

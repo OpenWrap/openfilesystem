@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using OpenFileSystem.IO.FileSystem.Local;
+using OpenFileSystem.IO.FileSystems;
 
 namespace OpenFileSystem.IO.FileSystem.InMemory
 {
@@ -79,10 +80,14 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
             return ChildDirectories.Where(x => x.Exists).Cast<IDirectory>();
         }
 
-        public IEnumerable<IDirectory> Directories(string filter)
+        public IEnumerable<IDirectory> Directories(string filter, SearchScope scope)
         {
-            var filterRegex = filter.Wildcard();
-            return ChildDirectories.Where(x => x.Exists && filterRegex.IsMatch(x.Name)).Cast<IDirectory>();
+            if (scope == SearchScope.CurrentOnly)
+            {
+                var filterRegex = filter.Wildcard();
+                return ChildDirectories.Where(x => x.Exists && filterRegex.IsMatch(x.Name)).Cast<IDirectory>();
+            }
+            throw new NotImplementedException();
         }
 
         public IEnumerable<IFile> Files()
@@ -90,10 +95,14 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
             return ChildFiles.Where(x => x.Exists).Cast<IFile>();
         }
 
-        public IEnumerable<IFile> Files(string filter)
+        public IEnumerable<IFile> Files(string filter, SearchScope searchScope)
         {
-            var filterRegex = filter.Wildcard();
-            return ChildFiles.Where(x => x.Exists && filterRegex.IsMatch(x.Name)).Cast<IFile>();
+            if (searchScope == SearchScope.CurrentOnly)
+            {
+                var filterRegex = filter.Wildcard();
+                return ChildFiles.Where(x => x.Exists && filterRegex.IsMatch(x.Name)).Cast<IFile>();
+            }
+            throw new NotImplementedException();
         }
 
         public IDirectory GetDirectory(string directoryName)

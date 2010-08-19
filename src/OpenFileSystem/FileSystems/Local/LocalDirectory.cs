@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using OpenFileSystem.IO.FileSystems;
 
 namespace OpenFileSystem.IO.FileSystem.Local
 {
@@ -69,10 +70,14 @@ namespace OpenFileSystem.IO.FileSystem.Local
             }
         }
 
-        public virtual IEnumerable<IDirectory> Directories(string filter)
+        public virtual IEnumerable<IDirectory> Directories(string filter, SearchScope scope)
         {
-            DirectoryInfo.Refresh();
-            return DirectoryInfo.GetDirectories(filter).Select(x => (IDirectory)CreateDirectory(x));
+            if (scope == SearchScope.CurrentOnly)
+            {
+                DirectoryInfo.Refresh();
+                return DirectoryInfo.GetDirectories(filter).Select(x => (IDirectory)CreateDirectory(x));
+            }
+            throw new NotImplementedException();
         }
 
         public IEnumerable<IFile> Files()
@@ -81,10 +86,12 @@ namespace OpenFileSystem.IO.FileSystem.Local
             return DirectoryInfo.GetFiles().Select(x => (IFile)new LocalFile(x.FullName,CreateDirectory));
         }
 
-        public IEnumerable<IFile> Files(string filter)
+        public IEnumerable<IFile> Files(string filter, SearchScope scope)
         {
             DirectoryInfo.Refresh();
-            return DirectoryInfo.GetFiles(filter).Select(x => (IFile)new LocalFile(x.FullName, CreateDirectory));
+            return DirectoryInfo.GetFiles(filter, scope == SearchScope.CurrentOnly ? SearchOption.TopDirectoryOnly : SearchOption.AllDirectories)
+                                .Select(x => new LocalFile(x.FullName, CreateDirectory))
+                                .Cast<IFile>();
         }
 
         public virtual IDirectory GetDirectory(string directoryName)
