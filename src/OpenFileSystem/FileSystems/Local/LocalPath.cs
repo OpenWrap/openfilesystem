@@ -24,7 +24,9 @@ namespace OpenFileSystem.IO.FileSystem.Local
         void GenerateSegments()
         {
             var segments = new List<string>();
-            var di = new DirectoryInfo(FullPath);
+            
+
+            var di = new DirectoryInfo(File.Exists(FullPath) ? Path.GetDirectoryName(FullPath) : FullPath);
             do
             {
                 segments.Add(di.Name);

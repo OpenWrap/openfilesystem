@@ -3,8 +3,38 @@ using System.IO;
 
 namespace OpenFileSystem.IO.FileSystem.Local
 {
-    public class LocalFile : IFile
+    public class LocalFile : IFile, IEquatable<LocalFile>
     {
+        public bool Equals(LocalFile other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return Equals(other.Path, Path);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != typeof(LocalFile)) return false;
+            return Equals((LocalFile)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return Path.GetHashCode();
+        }
+
+        public static bool operator ==(LocalFile left, LocalFile right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(LocalFile left, LocalFile right)
+        {
+            return !Equals(left, right);
+        }
+
         readonly string _filePath;
         readonly Func<DirectoryInfo, IDirectory> _directoryFactory;
 
