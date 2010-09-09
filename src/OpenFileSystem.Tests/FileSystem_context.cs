@@ -15,6 +15,29 @@ namespace OpenWrap.Tests.IO
     public class file_system<T> : context where T : IFileSystem
     {
         [Test]
+        public void temp_file_exists_after_creation_and_is_deleted_when_used()
+        {
+            string fullPath;
+            using (var tempFile = FileSystem.CreateTempFile())
+            {
+                tempFile.Exists.ShouldBeTrue();
+                fullPath = tempFile.Path.FullPath;
+                var tempFile2 = FileSystem.GetFile(fullPath);
+                tempFile2.Exists.ShouldBeTrue();
+                tempFile2.ShouldBe(tempFile);
+            }
+            FileSystem.GetFile(fullPath).Exists.ShouldBeFalse();
+        }
+
+        [Test]
+        public void temp_directory_is_rooted_correctly()
+        {
+            using(var tempDirectory = FileSystem.CreateTempDirectory())
+            {
+                tempDirectory.Parent.ShouldBe(FileSystem.GetTempDirectory());
+            }
+        }
+        [Test]
         public void directories_always_created()
         {
             var directory = FileSystem.GetDirectory(@"c:\test\test.html");

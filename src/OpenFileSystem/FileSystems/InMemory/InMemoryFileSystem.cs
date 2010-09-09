@@ -2,17 +2,19 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using OpenFileSystem.IO.FileSystem.Local;
 
 namespace OpenFileSystem.IO.FileSystem.InMemory
 {
     public class InMemoryFileSystem : IFileSystem
     {
+        readonly object _syncRoot = new object();
         public Dictionary<string, InMemoryDirectory> Directories { get; private set; }
 
         public InMemoryFileSystem(params InMemoryDirectory[] childDirectories)
         {
-            Directories = new Dictionary<string, InMemoryDirectory>();
+            Directories = new Dictionary<string, InMemoryDirectory>(StringComparer.OrdinalIgnoreCase);
             CurrentDirectory = @"c:\";
             
             foreach(var directory in childDirectories)
@@ -86,40 +88,50 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
 
         public ITemporaryDirectory CreateTempDirectory()
         {
-            return new InMemoryTemporaryDirectory(Path.Combine(@"c:\temporary", Path.GetRandomFileName()))
+            var sysTemp = (InMemoryDirectory)GetTempDirectory();
+
+            var tempDirectory = new InMemoryTemporaryDirectory(sysTemp.Path.Combine(Path.GetRandomFileName()).FullPath)
             {
                 Exists = true,
-                FileSystem = this
+                FileSystem = this,
+                Parent = sysTemp
             };
+            sysTemp.ChildDirectories.Add(tempDirectory);
+            return tempDirectory;
         }
 
         public IDirectory CreateDirectory(string path)
         {
-            return new InMemoryDirectory(path)
-            {
-                FileSystem = this,
-                Exists = true
-            };
+            return GetDirectory(path).MustExist();
         }
 
         public ITemporaryFile CreateTempFile()
         {
-            return new InMemoryTemporaryFile(Path.Combine(@"c:\temporary", Path.GetRandomFileName()))
+            var tempDirectory = (InMemoryDirectory)GetTempDirectory();
+            var tempFile = new InMemoryTemporaryFile(tempDirectory.Path.Combine(Path.GetRandomFileName()).ToString())
             {
                 Exists = true,
-                FileSystem = this
+                FileSystem = this,
+                Parent = tempDirectory
             };
+
+            tempDirectory.ChildFiles.Add(tempFile);
+            return tempFile;
         }
 
+        IDirectory _systemTempDirectory;
         public IDirectory GetTempDirectory()
         {
-            return new InMemoryTemporaryDirectory(Path.GetTempPath())
+            if(_systemTempDirectory == null)
             {
-                Exists = true,
-                FileSystem = this
-            
-            
-            };
+                lock(_syncRoot)
+                {
+                    Thread.MemoryBarrier();
+                    if (_systemTempDirectory == null)
+                        _systemTempDirectory = GetDirectory(Path.GetTempPath());
+                }
+            }
+            return _systemTempDirectory;
         }
 
         public string CurrentDirectory { get; set; }

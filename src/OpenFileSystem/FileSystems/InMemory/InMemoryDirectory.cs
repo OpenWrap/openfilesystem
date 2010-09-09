@@ -51,6 +51,8 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
         public IPath Path { get; private set; }
 
         IDirectory _target = null;
+        StringComparison _stringComparison = StringComparison.OrdinalIgnoreCase;
+
         public IDirectory Target
         {
             get { return _target ?? this; }
@@ -111,7 +113,7 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
                 return FileSystem.GetDirectory(directoryName);
 
             var inMemoryDirectory =
-                    ChildDirectories.FirstOrDefault(x => x.Name == directoryName);
+                    ChildDirectories.FirstOrDefault(x => x.Name.Equals(directoryName, _stringComparison));
 
 
             if (inMemoryDirectory == null)
@@ -119,7 +121,7 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
                 inMemoryDirectory = new InMemoryDirectory(System.IO.Path.Combine(Path.FullPath, directoryName))
                 {
                         Parent = this,
-                        FileSystem = this.FileSystem
+                        FileSystem = FileSystem
                 };
                 ChildDirectories.Add(inMemoryDirectory);
             }
@@ -130,7 +132,7 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
 
         public IFile GetFile(string fileName)
         {
-            var file = ChildFiles.FirstOrDefault(x => x.Name.Equals(fileName, StringComparison.OrdinalIgnoreCase));
+            var file = ChildFiles.FirstOrDefault(x => x.Name.Equals(fileName, _stringComparison));
             if (file == null)
             {
                 file = new InMemoryFile(Path.Combine(fileName).FullPath) { Parent = this };
@@ -178,6 +180,11 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
             if (Parent != null && !Parent.Exists)
                 Parent.Create();
             return this;
+        }
+
+        public override string ToString()
+        {
+            return Path.FullPath;
         }
     }
 }

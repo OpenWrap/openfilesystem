@@ -90,5 +90,9 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
                 }
             }
         }
+        public override string ToString()
+        {
+            return Path.FullPath;
+        }
     }
 }

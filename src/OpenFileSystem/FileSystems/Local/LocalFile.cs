@@ -69,7 +69,10 @@ namespace OpenFileSystem.IO.FileSystem.Local
         {
             get { return Exists ? new FileInfo(_filePath).LastWriteTimeUtc : (DateTime?)null; }
         }
-
+        public override string ToString()
+        {
+            return Path.FullPath;
+        }
         public IDirectory Parent
         {
             get

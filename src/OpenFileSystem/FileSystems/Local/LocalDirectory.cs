@@ -33,6 +33,11 @@ namespace OpenFileSystem.IO.FileSystem.Local
             }
         }
 
+        public override string ToString()
+        {
+            return Path.FullPath;
+        }
+
         public IFileSystem FileSystem
         {
             get { return LocalFileSystem.Instance; }
@@ -140,7 +145,7 @@ namespace OpenFileSystem.IO.FileSystem.Local
 
         public override int GetHashCode()
         {
-            return 0;
+            return Path.GetHashCode();
         }
 
     }
