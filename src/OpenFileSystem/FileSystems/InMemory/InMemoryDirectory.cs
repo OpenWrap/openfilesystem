@@ -84,12 +84,12 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
 
         public IEnumerable<IDirectory> Directories(string filter, SearchScope scope)
         {
-            if (scope == SearchScope.CurrentOnly)
-            {
-                var filterRegex = filter.Wildcard();
-                return ChildDirectories.Where(x => x.Exists && filterRegex.IsMatch(x.Name)).Cast<IDirectory>();
-            }
-            throw new NotImplementedException();
+            var filterRegex = filter.Wildcard();
+            var immediateChildren = ChildDirectories.Where(x => x.Exists && filterRegex.IsMatch(x.Name)).Cast<IDirectory>();
+            return scope == SearchScope.CurrentOnly
+                       ? immediateChildren
+                       : immediateChildren
+                             .Concat(ChildDirectories.SelectMany(x => x.Directories(filter, scope)));
         }
 
         public IEnumerable<IFile> Files()
@@ -99,12 +99,11 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
 
         public IEnumerable<IFile> Files(string filter, SearchScope searchScope)
         {
-            if (searchScope == SearchScope.CurrentOnly)
-            {
-                var filterRegex = filter.Wildcard();
-                return ChildFiles.Where(x => x.Exists && filterRegex.IsMatch(x.Name)).Cast<IFile>();
-            }
-            throw new NotImplementedException();
+            var filterRegex = filter.Wildcard();
+            var immediateChildren = ChildFiles.Where(x => x.Exists && filterRegex.IsMatch(x.Name)).Cast<IFile>();
+            return searchScope == SearchScope.CurrentOnly
+                ? immediateChildren
+                : immediateChildren.Concat(ChildDirectories.SelectMany(x => x.Files(filter, searchScope)));
         }
 
         public IDirectory GetDirectory(string directoryName)

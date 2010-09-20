@@ -7,6 +7,7 @@ using NUnit.Framework;
 using OpenFileSystem.IO;
 using OpenFileSystem.IO.FileSystem.InMemory;
 using OpenFileSystem.IO.FileSystem.Local;
+using OpenFileSystem.IO.FileSystems;
 using OpenWrap.Testing;
 
 namespace OpenWrap.Tests.IO
@@ -80,6 +81,32 @@ namespace OpenWrap.Tests.IO
                 .ShouldBe(Path.Combine(CurrentDirectory, "rohan.html"));
         }
     
+        [Test]
+        public void recursive_search_for_directories_returns_correct_directory()
+        {
+            using(var tempDirectory = FileSystem.CreateTempDirectory())
+            {
+                var mordor = tempDirectory.GetDirectory("mordor");
+                mordor.GetDirectory("shire").MustExist();
+                mordor.GetDirectory("rohan").MustExist();
+
+                tempDirectory.Directories("s*", SearchScope.SubFolders).ShouldHaveCountOf(1)
+                    .First().Name.ShouldBe("shire");
+            }
+        }
+        [Test]
+        public void recursive_search_for_files_returns_correct_files()
+        {
+            using (var tempDirectory = FileSystem.CreateTempDirectory())
+            {
+                var mordor = tempDirectory.GetDirectory("mordor");
+                mordor.GetFile("shire").MustExist();
+                mordor.GetFile("rohan").MustExist();
+
+                tempDirectory.Files("s*", SearchScope.SubFolders).ShouldHaveCountOf(1)
+                    .First().Name.ShouldBe("shire");
+            }
+        }
         [Test]
         public void two_directories_are_equal()
         {
@@ -165,6 +192,7 @@ namespace OpenWrap.Tests.IO
             dir1.Directories().ShouldHaveCountOf(0);
 
         }
+
         [Test]
         public void deleted_hardlink_doesnt_delete_subfolder()
         {

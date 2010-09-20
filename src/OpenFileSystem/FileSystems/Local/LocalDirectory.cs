@@ -55,7 +55,8 @@ namespace OpenFileSystem.IO.FileSystem.Local
 
         public IPath Path
         {
-            get; private set;
+            get;
+            private set;
         }
 
         public void Add(IFile file)
@@ -77,18 +78,15 @@ namespace OpenFileSystem.IO.FileSystem.Local
 
         public virtual IEnumerable<IDirectory> Directories(string filter, SearchScope scope)
         {
-            if (scope == SearchScope.CurrentOnly)
-            {
-                DirectoryInfo.Refresh();
-                return DirectoryInfo.GetDirectories(filter).Select(x => (IDirectory)CreateDirectory(x));
-            }
-            throw new NotImplementedException();
+            DirectoryInfo.Refresh();
+            return DirectoryInfo.GetDirectories(filter, scope == SearchScope.CurrentOnly ? SearchOption.TopDirectoryOnly : SearchOption.AllDirectories)
+                .Select(x => (IDirectory)CreateDirectory(x));
         }
 
         public IEnumerable<IFile> Files()
         {
             DirectoryInfo.Refresh();
-            return DirectoryInfo.GetFiles().Select(x => (IFile)new LocalFile(x.FullName,CreateDirectory));
+            return DirectoryInfo.GetFiles().Select(x => (IFile)new LocalFile(x.FullName, CreateDirectory));
         }
 
         public IEnumerable<IFile> Files(string filter, SearchScope scope)
