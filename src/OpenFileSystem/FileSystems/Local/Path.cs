@@ -5,15 +5,15 @@ using System.Linq;
 
 namespace OpenFileSystem.IO.FileSystem.Local
 {
-    public class LocalPath : IPath, IEquatable<IPath>
+    public class Path : IEquatable<Path>
     {
         readonly string _normalizedPath;
 
-        public LocalPath(string fullPath)
+        public Path(string fullPath)
         {
             FullPath = fullPath;
-            FileSystem = LocalFileSystem.Instance;
-            IsRooted = Path.IsPathRooted(fullPath);
+            
+            IsRooted = System.IO.Path.IsPathRooted(fullPath);
 
             GenerateSegments();
             _normalizedPath = NormalizePath(fullPath);
@@ -23,17 +23,7 @@ namespace OpenFileSystem.IO.FileSystem.Local
 
         void GenerateSegments()
         {
-            var segments = new List<string>();
-            
-
-            var di = new DirectoryInfo(File.Exists(FullPath) ? Path.GetDirectoryName(FullPath) : FullPath);
-            do
-            {
-                segments.Add(di.Name);
-                di = di.Parent;
-            } while (di != null);
-            segments.Reverse();
-            Segments = segments.AsReadOnly();
+            Segments = FullPath.Split(new[] { System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar },StringSplitOptions.RemoveEmptyEntries).ToList().AsReadOnly();
         }
 
         public IFileSystem FileSystem
@@ -44,19 +34,19 @@ namespace OpenFileSystem.IO.FileSystem.Local
 
         public string FullPath { get; private set; }
 
-        public IPath Combine(params string[] paths)
-        {
-            var combinedPath = paths.Aggregate(FullPath, Path.Combine);
-            return new LocalPath(combinedPath);
-        }
-
         public IEnumerable<string> Segments
         {
             get;
             private set;
         }
 
-        public bool Equals(IPath other)
+        public Path Combine(params string[] paths)
+        {
+            var combinedPath = paths.Aggregate(FullPath, System.IO.Path.Combine);
+            return new Path(combinedPath);
+        }
+
+        public bool Equals(Path other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -65,17 +55,15 @@ namespace OpenFileSystem.IO.FileSystem.Local
 
         string NormalizePath(string fullPath)
         {
-            return fullPath.EndsWith(Path.DirectorySeparatorChar.ToString()) || fullPath.EndsWith(Path.AltDirectorySeparatorChar.ToString())
-                ? fullPath.Substring(0, fullPath.Length - 1)
-                : fullPath;
+            return string.Join("" + System.IO.Path.DirectorySeparatorChar, Segments.ToArray());
         }
 
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (!(obj is IPath)) return false;
-            return Equals((IPath)obj);
+            if (!(obj is Path)) return false;
+            return Equals((Path)obj);
         }
 
         public override int GetHashCode()
@@ -86,12 +74,12 @@ namespace OpenFileSystem.IO.FileSystem.Local
         {
             return _normalizedPath;
         }
-        public static bool operator ==(LocalPath left, LocalPath right)
+        public static bool operator ==(Path left, Path right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator !=(LocalPath left, LocalPath right)
+        public static bool operator !=(Path left, Path right)
         {
             return !Equals(left, right);
         }

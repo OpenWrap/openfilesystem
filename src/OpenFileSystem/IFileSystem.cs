@@ -1,9 +1,11 @@
-﻿namespace OpenFileSystem.IO
+﻿using OpenFileSystem.IO.FileSystem.Local;
+
+namespace OpenFileSystem.IO
 {
     public interface IFileSystem
     {
         IDirectory GetDirectory(string directoryPath);
-        IPath GetPath(string path);
+        Path GetPath(string path);
 
         ITemporaryDirectory CreateTempDirectory();
         IDirectory CreateDirectory(string path);

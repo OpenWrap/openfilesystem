@@ -42,7 +42,7 @@ namespace OpenFileSystem.IO.FileSystem.Local
         {
             _filePath = filePath;
             _directoryFactory = directoryFactory;
-            Path = new LocalPath(filePath);
+            Path = new Path(filePath);
         }
 
         public bool Exists
@@ -91,7 +91,7 @@ namespace OpenFileSystem.IO.FileSystem.Local
             }
         }
 
-        public IPath Path { get; private set; }
+        public Path Path { get; private set; }
 
         public Stream Open(FileMode fileMode, FileAccess fileAccess, FileShare fileShare)
         {

@@ -13,7 +13,7 @@ namespace OpenFileSystem.IO.FileSystem.Local
         public LocalDirectory(DirectoryInfo directory)
         {
             DirectoryInfo = directory;
-            Path = new LocalPath(NormalizeDirectoryPath(DirectoryInfo.FullName));
+            Path = new Path(NormalizeDirectoryPath(DirectoryInfo.FullName));
         }
 
         public LocalDirectory(string directoryPath)
@@ -53,7 +53,7 @@ namespace OpenFileSystem.IO.FileSystem.Local
             get { return DirectoryInfo.Parent == null ? null : CreateDirectory(DirectoryInfo.Parent); }
         }
 
-        public IPath Path
+        public Path Path
         {
             get;
             private set;

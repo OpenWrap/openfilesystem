@@ -20,6 +20,13 @@ namespace OpenFileSystem.Tests
             FileSystem.GetDirectory(@"C:\TEST")
                       .ShouldBeTheSameInstanceAs(FileSystem.GetDirectory(@"c:\test"));
         }
+        [Test]
+        public void paths_are_correct()
+        {
+            var path = @"c:\tmp\TestPackage-1.0.0.1234.wrap";
+            var file = FileSystem.GetFile(path);
+            file.ToString().ShouldBe(path);
+        }
     }
     namespace context
     {

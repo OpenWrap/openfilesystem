@@ -1,4 +1,6 @@
-﻿namespace OpenFileSystem.IO
+﻿using OpenFileSystem.IO.FileSystem.Local;
+
+namespace OpenFileSystem.IO
 {
     public interface IFileSystemItem<T> : IFileSystemItem
         where T : IFileSystemItem
@@ -8,7 +10,7 @@
 
     public interface IFileSystemItem
     {
-        IPath Path { get; }
+        Path Path { get; }
         IDirectory Parent { get; }
         IFileSystem FileSystem { get; }
         bool Exists { get; }

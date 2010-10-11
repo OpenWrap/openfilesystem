@@ -9,6 +9,7 @@ using OpenFileSystem.IO.FileSystem.InMemory;
 using OpenFileSystem.IO.FileSystem.Local;
 using OpenFileSystem.IO.FileSystems;
 using OpenWrap.Testing;
+using Path = OpenFileSystem.IO.FileSystem.Local.Path;
 
 namespace OpenWrap.Tests.IO
 {
@@ -71,14 +72,14 @@ namespace OpenWrap.Tests.IO
         {
             var dir = FileSystem.GetDirectory("shire");
 
-            dir.Path.FullPath.ShouldBe(Path.Combine(CurrentDirectory,@"shire\"));
+            dir.Path.FullPath.ShouldBe(System.IO.Path.Combine(CurrentDirectory,@"shire\"));
             dir.Exists.ShouldBeFalse();
         }
         [Test]
         public void files_are_resolved_relative_to_current_directory()
         {
             FileSystem.GetFile("rohan.html").Path.FullPath
-                .ShouldBe(Path.Combine(CurrentDirectory, "rohan.html"));
+                .ShouldBe(System.IO.Path.Combine(CurrentDirectory, "rohan.html"));
         }
     
         [Test]
@@ -126,6 +127,12 @@ namespace OpenWrap.Tests.IO
             file.Exists.ShouldBeTrue();
             file.Delete();
         }
+        [Test]
+        public void file_paths_are_normalized()
+        {
+            var file = FileSystem.GetFile(@"c:\\folder\\file");
+            file.Path.FullPath.ShouldBe(@"c:\folder\file");
+        }
 
         [Test]
         public void trailing_slash_is_not_significant()
@@ -150,7 +157,7 @@ namespace OpenWrap.Tests.IO
             using (var concreteDir = FileSystem.CreateTempDirectory())
             {
                 concreteDir.GetFile("test.txt").OpenWrite().Close();
-                string linkedPath = Path.Combine(Path.GetTempPath(), tempLinkFolder);
+                string linkedPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), tempLinkFolder);
                 var linkedDirectory = concreteDir.LinkTo(linkedPath);
                 linkedDirectory.IsHardLink.ShouldBeTrue();
                 
@@ -211,7 +218,8 @@ namespace OpenWrap.Tests.IO
 
     public class in_memory_fs : file_system<InMemoryFileSystem>
     {
-        public in_memory_fs()
+        [SetUp]
+        public void setup()
         {
             CurrentDirectory = @"c:\mordor";
             FileSystem = new InMemoryFileSystem(
@@ -244,7 +252,8 @@ namespace OpenWrap.Tests.IO
 
     public class local_fs : file_system<LocalFileSystem>
     {
-        public local_fs(){
+        [SetUp]
+        public void setup(){
             CurrentDirectory = Environment.CurrentDirectory;
 
             FileSystem = LocalFileSystem.Instance;
@@ -255,13 +264,13 @@ namespace OpenWrap.Tests.IO
         [Test]
         public void path_has_segments()
         {
-            var path = new LocalPath(@"c:\mordor\nurn");
-            path.Segments.ShouldHaveSameElementsAs(new[] { @"c:\", "mordor", "nurn" });
+            var path = new Path(@"c:\mordor\nurn");
+            path.Segments.ShouldHaveSameElementsAs(new[] { @"c:", "mordor", "nurn" });
         }
         [Test]
         public void trailing_slash_is_always_normalized()
         {
-            new LocalPath(@"c:\mordor\nurn").ShouldBe(new LocalPath(@"c:\mordor\nurn\"));
+            new Path(@"c:\mordor\nurn").ShouldBe(new Path(@"c:\mordor\nurn\"));
         }
     }
 }

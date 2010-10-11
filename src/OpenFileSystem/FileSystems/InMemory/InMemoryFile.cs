@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using OpenFileSystem.IO.FileSystem.Local;
+using Path = OpenFileSystem.IO.FileSystem.Local.Path;
 
 namespace OpenFileSystem.IO.FileSystem.InMemory
 {
@@ -8,7 +9,7 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
     {
         public InMemoryFile(string filePath)
         {
-            Path = new LocalPath(filePath);
+            Path = new Path(filePath);
             Name = System.IO.Path.GetFileName(filePath);
             NameWithoutExtension = System.IO.Path.GetFileNameWithoutExtension(filePath);
             CreateNewStream();
@@ -24,10 +25,12 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
         public IFile Create()
         {
             Exists = true;
+            if (Parent != null && !Parent.Exists)
+                Parent.Create();
             return this;
         }
 
-        public IPath Path { get; set; }
+        public Path Path { get; set; }
         public IDirectory Parent
         {
             get;

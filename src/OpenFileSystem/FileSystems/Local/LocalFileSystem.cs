@@ -52,22 +52,22 @@ namespace OpenFileSystem.IO.FileSystem.Local
 
         public override ITemporaryDirectory CreateTempDirectory()
         {
-            return new TemporaryDirectory(CreateDirectory(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())));
+            return new TemporaryDirectory(CreateDirectory(System.IO.Path.Combine(System.IO.Path.GetTempPath(), System.IO.Path.GetRandomFileName())));
         }
 
         public override ITemporaryFile CreateTempFile()
         {
-            return new TemporaryLocalFile(Path.GetTempFileName(), di => CreateDirectory(di.FullName));
+            return new TemporaryLocalFile(System.IO.Path.GetTempFileName(), di => CreateDirectory(di.FullName));
         }
 
         public override IFile GetFile(string filePath)
         {
-            return new LocalFile(Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, filePath)), di=>CreateDirectory(di.FullName));
+            return new LocalFile(System.IO.Path.GetFullPath(System.IO.Path.Combine(Environment.CurrentDirectory, filePath)), di=>CreateDirectory(di.FullName));
         }
 
-        public override IPath GetPath(string path)
+        public override Path GetPath(string path)
         {
-            return new LocalPath(path);
+            return new Path(path);
         }
     }
 }

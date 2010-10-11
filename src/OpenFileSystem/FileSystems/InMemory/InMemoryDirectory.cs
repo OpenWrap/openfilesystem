@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using OpenFileSystem.IO.FileSystem.Local;
 using OpenFileSystem.IO.FileSystems;
+using Path = OpenFileSystem.IO.FileSystem.Local.Path;
 
 namespace OpenFileSystem.IO.FileSystem.InMemory
 {
@@ -15,7 +16,7 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
         {
             _source = this;
             directoryPath = NormalizeDirectoryPath(directoryPath);
-            Path = new LocalPath(directoryPath);
+            Path = new Path(directoryPath);
 
             ChildDirectories = new List<InMemoryDirectory>();
             ChildFiles = new List<InMemoryFile>();
@@ -48,8 +49,8 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
         }
 
         public IDirectory Parent { get; set; }
-        public IPath Path { get; private set; }
 
+        public Path Path { get; private set; }
         IDirectory _target = null;
         StringComparison _stringComparison = StringComparison.OrdinalIgnoreCase;
 

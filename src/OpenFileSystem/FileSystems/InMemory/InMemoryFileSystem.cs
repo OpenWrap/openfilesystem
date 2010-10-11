@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using OpenFileSystem.IO.FileSystem.Local;
+using Path = OpenFileSystem.IO.FileSystem.Local.Path;
 
 namespace OpenFileSystem.IO.FileSystem.InMemory
 {
@@ -49,15 +50,15 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
             {
                 Directories.Add(path, directory = new InMemoryDirectory(path)
                 {
-                        FileSystem = this
+                    FileSystem = this
                 });
             }
             return directory;
         }
         public IDirectory GetDirectory(string directoryPath)
         {
-            var resolvedDirectoryPath = Path.GetFullPath(Path.Combine(CurrentDirectory,directoryPath));
-            var pathSegments = new LocalPath(resolvedDirectoryPath).Segments;
+            var resolvedDirectoryPath = System.IO.Path.GetFullPath(System.IO.Path.Combine(CurrentDirectory,directoryPath));
+            var pathSegments = new Path(resolvedDirectoryPath).Segments;
             return pathSegments
                 .Skip(1)
                 .Aggregate((IDirectory)GetRoot(pathSegments.First()),
@@ -66,8 +67,8 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
 
         public IFile GetFile(string filePath)
         {
-            var resolviedFilePath = Path.GetFullPath(Path.Combine(CurrentDirectory, filePath));
-            var pathSegments = new LocalPath(resolviedFilePath).Segments;
+            var resolvedFilePath = System.IO.Path.GetFullPath(System.IO.Path.Combine(CurrentDirectory, filePath));
+            var pathSegments = new Path(resolvedFilePath).Segments;
             var ownerFolder = pathSegments
                 .Skip(1).Take(pathSegments.Count()-2)
                 .Aggregate((IDirectory)GetRoot(pathSegments.First()),
@@ -81,16 +82,16 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
 
         }
 
-        public IPath GetPath(string path)
+        public Path GetPath(string path)
         {
-            return new LocalPath(path);
+            return new Path(path);
         }
 
         public ITemporaryDirectory CreateTempDirectory()
         {
             var sysTemp = (InMemoryDirectory)GetTempDirectory();
 
-            var tempDirectory = new InMemoryTemporaryDirectory(sysTemp.Path.Combine(Path.GetRandomFileName()).FullPath)
+            var tempDirectory = new InMemoryTemporaryDirectory(sysTemp.Path.Combine(System.IO.Path.GetRandomFileName()).FullPath)
             {
                 Exists = true,
                 FileSystem = this,
@@ -108,14 +109,15 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
         public ITemporaryFile CreateTempFile()
         {
             var tempDirectory = (InMemoryDirectory)GetTempDirectory();
-            var tempFile = new InMemoryTemporaryFile(tempDirectory.Path.Combine(Path.GetRandomFileName()).ToString())
+            var tempFile = new InMemoryTemporaryFile(tempDirectory.Path.Combine(System.IO.Path.GetRandomFileName()).ToString())
             {
                 Exists = true,
                 FileSystem = this,
                 Parent = tempDirectory
             };
-
+            tempDirectory.Create();
             tempDirectory.ChildFiles.Add(tempFile);
+            
             return tempFile;
         }
 
@@ -128,7 +130,7 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
                 {
                     Thread.MemoryBarrier();
                     if (_systemTempDirectory == null)
-                        _systemTempDirectory = GetDirectory(Path.GetTempPath());
+                        _systemTempDirectory = GetDirectory(System.IO.Path.GetTempPath());
                 }
             }
             return _systemTempDirectory;

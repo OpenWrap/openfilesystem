@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenFileSystem", "OpenFileSystem\OpenFileSystem.csproj", "{0174E0E7-B915-46A9-B3D8-D62007E55694}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenFileSystem.Tests", "OpenFileSystem.Tests\OpenFileSystem.Tests.csproj", "{A5EB0BFC-609D-46CB-8FFB-F8F3065ABB11}"
