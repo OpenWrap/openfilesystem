@@ -67,7 +67,7 @@
     <Compile Include="FileSystems\Local\LocalDirectory.cs" />
     <Compile Include="FileSystems\Local\LocalFile.cs" />
     <Compile Include="FileSystems\Local\LocalFileSystem.cs" />
-    <Compile Include="FileSystems\Local\Path.cs" />
+    <Compile Include="Path.cs" />
     <Compile Include="SearchScope.cs" />
     <Compile Include="FileSystems\Local\TemporaryDirectory.cs" />
     <Compile Include="FileSystems\Local\TemporaryLocalFile.cs" />

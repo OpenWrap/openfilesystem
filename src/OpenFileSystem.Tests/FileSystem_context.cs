@@ -168,6 +168,12 @@ namespace OpenWrap.Tests.IO
             }
         }
         [Test]
+        public void different_directories_are_not_equal()
+        {
+            FileSystem.GetDirectory(@"c:\tmp\1\").ShouldNotBe(FileSystem.GetDirectory(@"c:\tmp\2\"));
+
+        }
+        [Test]
         public void link_has_reference_to_target()
         {
             using (var tempDir = FileSystem.CreateTempDirectory())

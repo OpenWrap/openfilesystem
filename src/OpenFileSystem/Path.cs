@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 
@@ -15,21 +16,15 @@ namespace OpenFileSystem.IO.FileSystem.Local
             
             IsRooted = System.IO.Path.IsPathRooted(fullPath);
 
-            GenerateSegments();
+            Segments = GenerateSegments(fullPath);
             _normalizedPath = NormalizePath(fullPath);
         }
 
         public bool IsRooted { get; private set; }
 
-        void GenerateSegments()
+        static IEnumerable<string> GenerateSegments(string path)
         {
-            Segments = FullPath.Split(new[] { System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar },StringSplitOptions.RemoveEmptyEntries).ToList().AsReadOnly();
-        }
-
-        public IFileSystem FileSystem
-        {
-            get;
-            set;
+            return path.Split(new[] { System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar },StringSplitOptions.RemoveEmptyEntries).ToList().AsReadOnly();
         }
 
         public string FullPath { get; private set; }
@@ -53,9 +48,9 @@ namespace OpenFileSystem.IO.FileSystem.Local
             return NormalizePath(other.FullPath).Equals(_normalizedPath, StringComparison.OrdinalIgnoreCase);
         }
 
-        string NormalizePath(string fullPath)
+        static string NormalizePath(string fullPath)
         {
-            return string.Join("" + System.IO.Path.DirectorySeparatorChar, Segments.ToArray());
+            return string.Join("" + System.IO.Path.DirectorySeparatorChar, GenerateSegments(fullPath).ToArray());
         }
 
         public override bool Equals(object obj)
