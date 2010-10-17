@@ -11,7 +11,6 @@ namespace OpenFileSystem.IO
         IEnumerable<IDirectory> Directories();
         IEnumerable<IFile> Files(string filter, SearchScope scope);
         IEnumerable<IDirectory> Directories(string filter, SearchScope scope);
-        void Add(IFile file);
         bool IsHardLink { get; }
         IDirectory LinkTo(string path);
         IDirectory Target { get; }

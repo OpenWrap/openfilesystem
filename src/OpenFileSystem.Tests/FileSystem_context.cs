@@ -13,8 +13,8 @@ using Path = OpenFileSystem.IO.FileSystem.Local.Path;
 
 namespace OpenWrap.Tests.IO
 {
-    
-    public class file_system<T> : context where T : IFileSystem
+
+    public abstract class file_system<T> : context where T : IFileSystem
     {
         [Test]
         public void temp_file_exists_after_creation_and_is_deleted_when_used()
@@ -34,7 +34,7 @@ namespace OpenWrap.Tests.IO
         [Test]
         public void temp_directory_is_rooted_correctly()
         {
-            using(var tempDirectory = FileSystem.CreateTempDirectory())
+            using (var tempDirectory = FileSystem.CreateTempDirectory())
             {
                 tempDirectory.Parent.ShouldBe(FileSystem.GetTempDirectory());
             }
@@ -72,7 +72,7 @@ namespace OpenWrap.Tests.IO
         {
             var dir = FileSystem.GetDirectory("shire");
 
-            dir.Path.FullPath.ShouldBe(System.IO.Path.Combine(CurrentDirectory,@"shire\"));
+            dir.Path.FullPath.ShouldBe(System.IO.Path.Combine(CurrentDirectory, @"shire\"));
             dir.Exists.ShouldBeFalse();
         }
         [Test]
@@ -81,11 +81,11 @@ namespace OpenWrap.Tests.IO
             FileSystem.GetFile("rohan.html").Path.FullPath
                 .ShouldBe(System.IO.Path.Combine(CurrentDirectory, "rohan.html"));
         }
-    
+
         [Test]
         public void recursive_search_for_directories_returns_correct_directory()
         {
-            using(var tempDirectory = FileSystem.CreateTempDirectory())
+            using (var tempDirectory = FileSystem.CreateTempDirectory())
             {
                 var mordor = tempDirectory.GetDirectory("mordor");
                 mordor.GetDirectory("shire").MustExist();
@@ -145,7 +145,7 @@ namespace OpenWrap.Tests.IO
         [Test]
         public void standard_directory_is_not_a_link()
         {
-            using(var dir = FileSystem.CreateTempDirectory())
+            using (var dir = FileSystem.CreateTempDirectory())
             {
                 dir.IsHardLink.ShouldBeFalse();
             }
@@ -160,7 +160,7 @@ namespace OpenWrap.Tests.IO
                 string linkedPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), tempLinkFolder);
                 var linkedDirectory = concreteDir.LinkTo(linkedPath);
                 linkedDirectory.IsHardLink.ShouldBeTrue();
-                
+
                 linkedDirectory.Delete();
                 linkedDirectory.Exists.ShouldBeFalse();
                 concreteDir.Exists.ShouldBeTrue();
@@ -182,7 +182,7 @@ namespace OpenWrap.Tests.IO
                 var linkedDir = concreteDir.LinkTo(tempDir.Path.Combine("link").FullPath);
                 linkedDir.Target.ShouldBe(concreteDir);
                 linkedDir.Delete();
-                
+
             }
         }
 
@@ -205,7 +205,6 @@ namespace OpenWrap.Tests.IO
             dir1.Directories().ShouldHaveCountOf(0);
 
         }
-
         [Test]
         public void deleted_hardlink_doesnt_delete_subfolder()
         {
@@ -218,6 +217,64 @@ namespace OpenWrap.Tests.IO
             dir1.Exists.ShouldBeTrue();
             child.Exists.ShouldBeTrue();
         }
+        [Test]
+        public void moving_file_moves_a_file()
+        {
+            var temporaryFile = FileSystem.CreateTempFile();
+            var newFileName = FileSystem.GetTempDirectory().GetFile(Guid.NewGuid().ToString());
+            temporaryFile.MoveTo(newFileName);
+
+            FileSystem.GetFile(temporaryFile.Path.FullPath).Exists.ShouldBeFalse();
+            newFileName.Exists.ShouldBeTrue();
+
+        }
+        [Test]
+        public void moving_directory_moves_directories()
+        {
+            var tempDirectory = FileSystem.CreateTempDirectory();
+            var oldDirName = tempDirectory.Path.FullPath;
+
+            var newDir = FileSystem.GetDirectory(FileSystem.GetTempDirectory().Path.Combine(Guid.NewGuid().ToString() + "/").FullPath);
+            tempDirectory.MoveTo(newDir);
+            newDir.Exists.ShouldBeTrue();
+            FileSystem.GetDirectory(oldDirName).Exists.ShouldBeFalse();
+        }
+        [TestCase(FileAccess.Read, FileShare.None, FileAccess.Read)]
+        [TestCase(FileAccess.Read, FileShare.Write, FileAccess.Read)]
+        [TestCase(FileAccess.Write, FileShare.None, FileAccess.Write)]
+        [TestCase(FileAccess.Write, FileShare.Read, FileAccess.Write)]
+        [TestCase(FileAccess.Read, FileShare.Read, FileAccess.Write)]
+        public void failing_locks(FileAccess firstAccess, FileShare @lock, FileAccess nextAccess)
+        {
+            using (var temporaryFile = FileSystem.CreateTempFile())
+            using (var stream1 = temporaryFile.Open(FileMode.OpenOrCreate, firstAccess, @lock))
+                Executing(() => temporaryFile.Open(FileMode.OpenOrCreate, nextAccess, FileShare.None))
+                   .ShouldThrow<IOException>();
+        }
+        [Test]
+        public void open_write_with_truncate_creates_a_new_stream()
+        {
+            using (var temporaryFile = given_file("Hello"))
+            using (var writer = temporaryFile.Open(FileMode.Truncate, FileAccess.Write, FileShare.None))
+                writer.Length.ShouldBe(0);
+        }
+        [Test]
+        public void open_write_with_create_creates_a_new_stream()
+        {
+            using (var temporaryFile = given_file("Hello"))
+            using (var writer = temporaryFile.Open(FileMode.Create, FileAccess.Write, FileShare.None))
+                writer.Length.ShouldBe(0);
+        }
+        [Test]
+        protected ITemporaryFile given_file(string content)
+        {
+            var temporaryFile = FileSystem.CreateTempFile();
+            using (var writer = temporaryFile.OpenWrite())
+                writer.Write(Encoding.UTF8.GetBytes("Hello"));
+
+            return temporaryFile;
+        }
+
         protected IFileSystem FileSystem { get; set; }
         protected string CurrentDirectory { get; set; }
     }
@@ -237,29 +294,13 @@ namespace OpenWrap.Tests.IO
                 CurrentDirectory = CurrentDirectory
             };
         }
-        [Test]
-        public void can_add_folders_to_fs()
-        {
-            var fs = new InMemoryFileSystem(new InMemoryDirectory(@"c:\mordor"));
-            fs.Directories.ShouldHaveCountOf(1);
-        }
-        [Test]
-        public void can_add_sub_folders()
-        {
-            var fs = new InMemoryFileSystem(new InMemoryDirectory(@"c:\mordor\nurn"));
-            var mordor = fs.GetDirectory(@"c:\mordor");
-            mordor.Exists.ShouldBeTrue();
-
-            var nurn = mordor.GetDirectory("nurn");
-            nurn.Path.FullPath.ShouldBe(@"c:\mordor\nurn\");
-            nurn.Exists.ShouldBeTrue();
-        }
     }
 
     public class local_fs : file_system<LocalFileSystem>
     {
         [SetUp]
-        public void setup(){
+        public void setup()
+        {
             CurrentDirectory = Environment.CurrentDirectory;
 
             FileSystem = LocalFileSystem.Instance;

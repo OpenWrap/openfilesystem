@@ -7,7 +7,7 @@
 
   <PropertyGroup>
     <OpenWrap-EnableVisualStudioIntegration Condition="'$(OpenWrap-EnableVisualStudioIntegration)' == '' and '$(BuildingInsideVisualStudio)' == 'true'">true</OpenWrap-EnableVisualStudioIntegration>
-
+    
     <!-- Emit output information post-build for OpenWrap to create packages -->
     <OpenWrap-EmitOutputInstructions Condition="'$(OpenWrap-EmitOutputInstructions)' == ''">false</OpenWrap-EmitOutputInstructions>
 
@@ -38,7 +38,7 @@
     <_WrapFile Include="$(MSBuildProjectDirectory)\..\..\*.wrapdesc" Condition="!Exists(@(_WrapFile->'%(FullPath)'))" />
   </ItemGroup>
   <Target Name="_Initialize">
-    <InitializeOpenWrap />
+    <InitializeOpenWrap StartDebug="$(OpenWrap-StartDebug)" />
 
     <InitializeVisualStudioIntegration
       WrapDescriptor="@(_WrapFile)"
@@ -89,9 +89,9 @@
   <Target Name="OpenWrap-AfterBuild"
           Condition="$(OpenWrap-EmitOutputInstructions)">
     <!-- Descriptor file -->
-    <Message Text="[built(.,'%(_WrapFile.FullPath)')]" />
+    <!--<Message Text="[built(.,'%(_WrapFile.FullPath)')]" />-->
     <!-- Version file -->
-    <Message Text="[built(.,'@(_WrapFile->'%(RootDir)%(Directory)')version')]" />
+    <!--<Message Text="[built(.,'@(_WrapFile->'%(RootDir)%(Directory)')version')]" />-->
 
     <!-- Referenced projects -->
     <ItemGroup>
@@ -100,7 +100,7 @@
       <_OpenWrap-CopyLocal Include="@(ReferenceCopyLocalPaths)" Exclude="@(_OpenWrap-AssemblyReferences)" />
     </ItemGroup>
 
-    <Message Text="[built($(OpenWrap-ExportName),'@(_OpenWrap-CopyLocal)')]" Condition="'@(_OpenWrap-CopyLocal)' != ''" />
+    <Message Text="[built($(OpenWrap-ExportName),'%(_OpenWrap-CopyLocal.FullPath)')]" Condition="'@(_OpenWrap-CopyLocal)' != ''" />
 
     <!-- Content -->
     <Message Text="[built($(OpenWrap-ExportName),'%(Content.FullPath)')]" Condition="Exists('@(Content)')" />

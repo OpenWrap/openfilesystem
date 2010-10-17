@@ -53,12 +53,6 @@ namespace OpenFileSystem.IO.FileSystem.Local
             
         }
 
-        public void Add(IFile file)
-        {
-            UnderlyingDirectory.Add(file);
-
-        }
-
         public bool IsHardLink
         {
             get { return UnderlyingDirectory.IsHardLink; }
@@ -105,7 +99,17 @@ namespace OpenFileSystem.IO.FileSystem.Local
             UnderlyingDirectory.Delete();
 
         }
-        
+
+        public void CopyTo(IFileSystemItem item)
+        {
+            UnderlyingDirectory.CopyTo(item);
+        }
+
+        public void MoveTo(IFileSystemItem item)
+        {
+            UnderlyingDirectory.MoveTo(item);
+        }
+
 
         ~TemporaryDirectory()
         {

@@ -127,6 +127,21 @@ namespace OpenFileSystem.IO.FileSystem.Local
             return this;
         }
 
+        public void MoveTo(IFileSystemItem newFileName)
+        {
+            DirectoryInfo.Refresh();
+            DirectoryInfo.MoveTo(newFileName.Path.FullPath);
+        }
+        public void CopyTo(IFileSystemItem newItem)
+        {
+            DirectoryInfo.Refresh();
+            if (!DirectoryInfo.Exists)
+                DirectoryInfo.Create();
+            foreach (var file in Files())
+                file.CopyTo(newItem);
+            foreach(var directory in Directories())
+                directory.CopyTo(GetDirectory(Name));
+        }
         public bool Equals(IDirectory other)
         {
             if (ReferenceEquals(null, other)) return false;

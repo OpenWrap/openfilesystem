@@ -76,7 +76,7 @@
     <Compile Include="FileSystems\Local\Win32\Interop\JunctionPoint.cs" />
     <Compile Include="FileSystems\Local\Win32\Win32Directory.cs" />
     <Compile Include="FileSystems\Local\Win32\Win32FileSystem.cs" />
-    <Compile Include="FileSystems\NonDisposableStream.cs" />
+    <Compile Include="FileSystems\FileStreamDouble.cs" />
     <Compile Include="IDirectory.cs" />
     <Compile Include="IFile.cs" />
     <Compile Include="IFileSystem.cs" />
@@ -84,6 +84,7 @@
     <Compile Include="ITemporaryDirectory.cs" />
     <Compile Include="ITemporaryFile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StreamExtensions.cs" />
     <Compile Include="StringExtensions.cs" />
   </ItemGroup>
   <Import Project="..\..\wraps\openwrap\build\OpenWrap.CSharp.targets" />

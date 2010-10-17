@@ -27,6 +27,24 @@ namespace OpenFileSystem.Tests
             var file = FileSystem.GetFile(path);
             file.ToString().ShouldBe(path);
         }
+
+        [Test]
+        public void can_add_folders_to_fs()
+        {
+            var fs = new InMemoryFileSystem(new InMemoryDirectory(@"c:\mordor"));
+            fs.Directories.ShouldHaveCountOf(1);
+        }
+        [Test]
+        public void can_add_sub_folders()
+        {
+            var fs = new InMemoryFileSystem(new InMemoryDirectory(@"c:\mordor\nurn"));
+            var mordor = fs.GetDirectory(@"c:\mordor");
+            mordor.Exists.ShouldBeTrue();
+
+            var nurn = mordor.GetDirectory("nurn");
+            nurn.Path.FullPath.ShouldBe(@"c:\mordor\nurn\");
+            nurn.Exists.ShouldBeTrue();
+        }
     }
     namespace context
     {

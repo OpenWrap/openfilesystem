@@ -16,5 +16,7 @@ namespace OpenFileSystem.IO
         bool Exists { get; }
         string Name { get; }
         void Delete();
+        void CopyTo(IFileSystemItem item);
+        void MoveTo(IFileSystemItem item);
     }
 }

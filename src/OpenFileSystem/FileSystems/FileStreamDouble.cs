@@ -1,23 +1,33 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace OpenFileSystem.IO.FileSystem
 {
-    public class NonDisposableStream : Stream
+    public class FileStreamDouble : Stream
     {
-        public NonDisposableStream(Stream innerStream)
+        readonly Action _onClose;
+
+        public FileStreamDouble(Stream innerStream, Action onClose)
         {
+            _onClose = onClose;
             InnerStream = innerStream;
+            _canRead = innerStream.CanRead;
+            _canWrite = innerStream.CanWrite;
+            _canSeek = innerStream.CanSeek;
+
         }
 
         public Stream InnerStream { get; private set; }
 
         public override void Close()
         {
+            _onClose();
             InnerStream.Position = 0;
         }
 
         protected override void Dispose(bool disposing)
         {
+            _onClose();
             InnerStream.Position = 0;
         }
 
@@ -45,19 +55,39 @@ namespace OpenFileSystem.IO.FileSystem
         {
             InnerStream.Write(buffer, offset, count);
         }
-
+        public FileStreamDouble AsRead()
+        {
+            _canRead = true;
+            _canWrite = false;
+            return this;
+        }
+        public FileStreamDouble AsWrite()
+        {
+            _canRead = false;
+            _canWrite = false;
+            return this;
+        }
+        public FileStreamDouble AsReadWrite()
+        {
+            _canRead = true;
+            _canWrite = true;
+            return this;
+        }
+        bool _canRead;
+        bool _canWrite;
+        bool _canSeek;
         public override bool CanRead
         {
-            get { return InnerStream.CanRead; }
+            get { return _canRead; }
         }
 
         public override bool CanSeek
         {
-            get { return InnerStream.CanSeek; }
+            get { return _canSeek; }
         }
         public override bool CanWrite
         {
-            get { return InnerStream.CanWrite; }
+            get { return _canWrite; }
         }
 
         public override long Length

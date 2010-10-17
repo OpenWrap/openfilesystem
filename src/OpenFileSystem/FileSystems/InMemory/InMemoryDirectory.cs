@@ -73,11 +73,6 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
             return Path.GetHashCode();
         }
 
-        public void Add(IFile file)
-        {
-            ChildFiles.Add((InMemoryFile)file);
-        }
-
         public IEnumerable<IDirectory> Directories()
         {
             return ChildDirectories.Where(x => x.Exists).Cast<IDirectory>();
@@ -129,7 +124,6 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
 
             return inMemoryDirectory;
         }
-
         public IFile GetFile(string fileName)
         {
             var file = ChildFiles.FirstOrDefault(x => x.Name.Equals(fileName, _stringComparison));
@@ -174,12 +168,39 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
             Exists = false;
         }
 
+        public void CopyTo(IFileSystemItem item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void MoveTo(IFileSystemItem item)
+        {
+            if (!item.Path.IsRooted) throw new ArgumentException("Has to be a fully-qualified path for a move to succeed.");
+            var newDirectory = (InMemoryDirectory)FileSystem.GetDirectory(item.Path.FullPath);
+            newDirectory.Exists = true;
+            newDirectory.ChildFiles = this.ChildFiles;
+            newDirectory.ChildDirectories = this.ChildDirectories;
+            foreach(var file in newDirectory.ChildFiles.OfType<InMemoryFile>())
+                file.Parent = newDirectory;
+            
+            foreach(var file in newDirectory.ChildDirectories.OfType<InMemoryDirectory>())
+                file.Parent = newDirectory;
+
+            this.Exists = false;
+            ChildFiles.Clear();
+            ChildDirectories.Clear();
+        }
+
         public IDirectory Create()
         {
             Exists = true;
             if (Parent != null && !Parent.Exists)
                 Parent.Create();
             return this;
+        }
+
+        public void Move(Path newFileName)
+        {
         }
 
         public override string ToString()

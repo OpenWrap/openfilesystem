@@ -20,6 +20,7 @@ namespace OpenFileSystem.IO.FileSystem.Local
             _normalizedPath = NormalizePath(fullPath);
         }
 
+        public string DirectoryName { get { return IsDirectoryPath ? _normalizedPath : System.IO.Path.GetDirectoryName(FullPath);}}
         public bool IsRooted { get; private set; }
 
         static IEnumerable<string> GenerateSegments(string path)
@@ -34,7 +35,7 @@ namespace OpenFileSystem.IO.FileSystem.Local
             get;
             private set;
         }
-
+        public bool IsDirectoryPath { get { return FullPath.EndsWith(System.IO.Path.DirectorySeparatorChar + "") || FullPath.EndsWith(System.IO.Path.AltDirectorySeparatorChar + ""); } }
         public Path Combine(params string[] paths)
         {
             var combinedPath = paths.Aggregate(FullPath, System.IO.Path.Combine);

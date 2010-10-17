@@ -6,11 +6,6 @@ namespace OpenFileSystem.IO
 {
     public static class FileExtensions
     {
-        public static void CopyTo(this IFile file, IDirectory directory)
-        {
-            directory.Add(file);
-        }
-
         public static T MustExist<T>(this T directory) where T:IFileSystemItem<T>
         {
             if (!directory.Exists)

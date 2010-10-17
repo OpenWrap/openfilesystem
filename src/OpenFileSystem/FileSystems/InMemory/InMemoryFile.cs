@@ -7,6 +7,17 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
 {
     public class InMemoryFile : IFile
     {
+        void CopyFromFile(InMemoryFile fileToCopy)
+        {
+            Exists = true;
+            LastModifiedTimeUtc = fileToCopy.LastModifiedTimeUtc;
+            
+            Stream = new FileStreamDouble(new MemoryStream(), FileStreamClosed);
+            fileToCopy.Stream.Position = 0;
+            fileToCopy.Stream.CopyTo(Stream);
+            Stream.Position = 0;
+        }
+
         public InMemoryFile(string filePath)
         {
             Path = new Path(filePath);
@@ -16,18 +27,37 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
             LastModifiedTimeUtc = DateTime.Now;
         }
 
+        FileShare? _lock = null;
         void CreateNewStream()
         {
-            Stream = new NonDisposableStream(new MemoryStream());
+            Stream = new FileStreamDouble(new MemoryStream(), FileStreamClosed);
         }
 
-        public Stream Stream { get; set; }
+        void FileStreamClosed()
+        {
+            _lock = null;
+        }
+
+        public FileStreamDouble Stream { get; set; }
         public IFile Create()
         {
             Exists = true;
             if (Parent != null && !Parent.Exists)
                 Parent.Create();
             return this;
+        }
+
+        public void CopyTo(IFileSystemItem where)
+        {
+            if (where is InMemoryFile)
+                ((InMemoryFile)where).CopyFromFile(this);
+            if (where is InMemoryDirectory)
+                ((InMemoryFile)((InMemoryDirectory)where).GetFile(Name)).CopyFromFile(this);
+        }
+        public void MoveTo(IFileSystemItem newFileName)
+        {
+            CopyTo(newFileName);
+            Delete();
         }
 
         public Path Path { get; set; }
@@ -56,7 +86,34 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
         public Stream Open(FileMode fileMode, FileAccess fileAccess, FileShare fileShare)
         {
             ValidateFileMode(fileMode);
+            ValidateFileLock(fileAccess, fileShare);
+
+            Stream.Position = 0;
             return Stream;
+        }
+
+        void ValidateFileLock(FileAccess fileAccess, FileShare fileShare)
+        {
+            // no previous lock, allow
+            if (_lock == null)
+            {
+                _lock = fileShare;
+                //if (fileAccess == FileAccess.Read)
+                //    Stream.AsRead();
+                //else if (fileAccess == FileAccess.Write)
+                //    Stream.AsWrite();
+                //else if (fileAccess == FileAccess.ReadWrite)
+                Stream.AsReadWrite();
+                return;
+            }
+            bool readAllowed = _lock.Value == FileShare.Read || _lock.Value == FileShare.ReadWrite;
+            bool writeAllowed = _lock.Value == FileShare.Write || _lock.Value == FileShare.ReadWrite;
+
+            if ((fileAccess == FileAccess.Read && !readAllowed) ||
+                (fileAccess == FileAccess.ReadWrite && !(readAllowed && writeAllowed)) ||
+                (fileAccess == FileAccess.Write && !writeAllowed))
+                throw new IOException("File is locked. Please try again.");
+
         }
 
         void ValidateFileMode(FileMode fileMode)

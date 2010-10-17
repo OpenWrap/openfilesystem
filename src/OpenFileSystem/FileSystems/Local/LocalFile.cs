@@ -105,6 +105,16 @@ namespace OpenFileSystem.IO.FileSystem.Local
             File.Delete(_filePath);
         }
 
+        public void CopyTo(IFileSystemItem item)
+        {
+            File.Copy(_filePath, item.Path.FullPath);
+        }
+
+        public void MoveTo(IFileSystemItem item)
+        {
+            File.Move(_filePath, item.Path.FullPath);
+        }
+
         public IFile Create()
         {
             // creates the parent if it doesnt exist
@@ -113,6 +123,11 @@ namespace OpenFileSystem.IO.FileSystem.Local
 
             File.Create(Path.FullPath).Close();
             return this;
+        }
+
+        public void Move(Path newFileName)
+        {
+            File.Move(Path.FullPath, newFileName.FullPath);
         }
     }
 }
