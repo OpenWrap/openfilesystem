@@ -1,6 +1,4 @@
-﻿using OpenFileSystem.IO.FileSystem.Local;
-
-namespace OpenFileSystem.IO
+﻿namespace OpenFileSystem.IO
 {
     public interface IFileSystem
     {

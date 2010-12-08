@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace OpenFileSystem.IO.FileSystem
+namespace OpenFileSystem.IO.FileSystems
 {
     public class FileStreamDouble : Stream
     {

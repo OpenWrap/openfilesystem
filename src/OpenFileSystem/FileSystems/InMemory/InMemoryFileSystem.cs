@@ -1,57 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
-using OpenFileSystem.IO.FileSystem.Local;
-using Path = OpenFileSystem.IO.FileSystem.Local.Path;
 
-namespace OpenFileSystem.IO.FileSystem.InMemory
+namespace OpenFileSystem.IO.FileSystems.InMemory
 {
     public class InMemoryFileSystem : IFileSystem
     {
         readonly object _syncRoot = new object();
         public Dictionary<string, InMemoryDirectory> Directories { get; private set; }
 
-        public InMemoryFileSystem(params InMemoryDirectory[] childDirectories)
+        public InMemoryFileSystem()
         {
             Directories = new Dictionary<string, InMemoryDirectory>(StringComparer.OrdinalIgnoreCase);
             CurrentDirectory = @"c:\";
-            
-            foreach(var directory in childDirectories)
-            {
-                var root = GetRoot(directory.Path.Segments.First());
-                foreach(var segment in directory.Path.Segments
-                    .Skip(1)
-                    .Take(directory.Path.Segments.Count()-2))
-                {
-                    root = (InMemoryDirectory)root.GetDirectory(segment);
-                }
-                directory.Parent = root;
-                root.ChildDirectories.Add(directory);
-                directory.Create();
-            }
-            Action<IEnumerable<IDirectory>> assignFs = null;
-            assignFs = dirs =>
-            {
-                foreach (var dir in dirs.OfType<InMemoryDirectory>())
-                {
-                    dir.FileSystem = this;
-                    assignFs(dir.Directories());
-                }
-            };
-            assignFs(childDirectories);
+            Notifier = new InMemoryFileSystemNotifier();
         }
-        
+
+        public InMemoryFileSystemNotifier Notifier { get; set; }
+
         InMemoryDirectory GetRoot(string path)
         {
             InMemoryDirectory directory;
             if (!Directories.TryGetValue(path, out directory))
             {
-                Directories.Add(path, directory = new InMemoryDirectory(path)
-                {
-                    FileSystem = this
-                });
+                Directories.Add(path, directory = new InMemoryDirectory(this, path));
             }
             return directory;
         }
@@ -91,10 +64,9 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
         {
             var sysTemp = (InMemoryDirectory)GetTempDirectory();
 
-            var tempDirectory = new InMemoryTemporaryDirectory(sysTemp.Path.Combine(System.IO.Path.GetRandomFileName()).FullPath)
+            var tempDirectory = new InMemoryTemporaryDirectory(this, sysTemp.Path.Combine(System.IO.Path.GetRandomFileName()).FullPath)
             {
                 Exists = true,
-                FileSystem = this,
                 Parent = sysTemp
             };
             sysTemp.ChildDirectories.Add(tempDirectory);

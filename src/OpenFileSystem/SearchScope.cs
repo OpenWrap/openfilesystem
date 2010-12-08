@@ -1,4 +1,4 @@
-﻿namespace OpenFileSystem.IO.FileSystems
+﻿namespace OpenFileSystem.IO
 {
     public enum SearchScope
     {

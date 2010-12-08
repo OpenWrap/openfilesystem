@@ -1,8 +1,8 @@
-﻿namespace OpenFileSystem.IO.FileSystem.InMemory
+﻿namespace OpenFileSystem.IO.FileSystems.InMemory
 {
     public class InMemoryTemporaryDirectory : InMemoryDirectory, ITemporaryDirectory
     {
-        public InMemoryTemporaryDirectory(string path) : base(path)
+        public InMemoryTemporaryDirectory(InMemoryFileSystem fs, string path) : base(fs, path)
         {
         }
 

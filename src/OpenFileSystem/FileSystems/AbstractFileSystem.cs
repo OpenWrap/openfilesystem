@@ -1,6 +1,4 @@
-﻿using OpenFileSystem.IO.FileSystem.Local;
-
-namespace OpenFileSystem.IO.FileSystem
+﻿namespace OpenFileSystem.IO.FileSystems
 {
     public abstract class AbstractFileSystem : IFileSystem
     {

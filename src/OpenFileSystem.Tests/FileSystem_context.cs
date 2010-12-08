@@ -3,19 +3,35 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using NUnit.Framework;
 using OpenFileSystem.IO;
-using OpenFileSystem.IO.FileSystem.InMemory;
-using OpenFileSystem.IO.FileSystem.Local;
 using OpenFileSystem.IO.FileSystems;
+using OpenFileSystem.IO.FileSystems.InMemory;
+using OpenFileSystem.IO.FileSystems.Local;
 using OpenWrap.Testing;
-using Path = OpenFileSystem.IO.FileSystem.Local.Path;
+using Path = OpenFileSystem.IO.Path;
 
 namespace OpenWrap.Tests.IO
 {
 
     public abstract class file_system<T> : context where T : IFileSystem
     {
+        [Test]
+        public void receives_creation_notification()
+        {
+            using (var tempDir = FileSystem.CreateTempDirectory())
+            {
+                string filePath = null;
+                using (tempDir.FileChanges(created: f => filePath = f.Path.FullPath))
+                {
+
+                    tempDir.GetFile("hello.txt").MustExist();
+                    Thread.Sleep(TimeSpan.FromSeconds(1));
+                    filePath.ShouldBe(tempDir.Path.Combine("hello.txt").FullPath);
+                }
+            }
+        }
         [Test]
         public void temp_file_exists_after_creation_and_is_deleted_when_used()
         {
@@ -285,14 +301,10 @@ namespace OpenWrap.Tests.IO
         public void setup()
         {
             CurrentDirectory = @"c:\mordor";
-            FileSystem = new InMemoryFileSystem(
-                new InMemoryDirectory(@"c:\mordor",
-                    new InMemoryFile("rings.txt")
-                )
-            )
+            FileSystem = new InMemoryFileSystem
             {
-                CurrentDirectory = CurrentDirectory
-            };
+                    CurrentDirectory = CurrentDirectory
+            }.CreateChildDir(@"c:\mordor", mordor=>mordor.CreateChildFile("rings.txt"));
         }
     }
 

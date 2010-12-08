@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using Mono.Unix;
-using OpenFileSystem.IO.FileSystem.Local;
 
 namespace OpenFileSystem.IO.FileSystems.Local.Unix
 {
@@ -16,6 +15,7 @@ namespace OpenFileSystem.IO.FileSystems.Local.Unix
         public UnixDirectory(string directoryPath)
                 : base(directoryPath)
         {
+            GetUnixInfo(directoryPath);
         }
 
         public override bool IsHardLink

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.IO;
-using OpenFileSystem.IO.FileSystem.Local;
-using Path = OpenFileSystem.IO.FileSystem.Local.Path;
 
-namespace OpenFileSystem.IO.FileSystem.InMemory
+namespace OpenFileSystem.IO.FileSystems.InMemory
 {
     public class InMemoryFile : IFile
     {
@@ -41,10 +39,20 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
         public FileStreamDouble Stream { get; set; }
         public IFile Create()
         {
+            EnsureExists();
+            return this;
+        }
+
+        void EnsureExists()
+        {
+            if (Exists) return;
             Exists = true;
             if (Parent != null && !Parent.Exists)
                 Parent.Create();
-            return this;
+            if (Parent != null)
+            {
+                ((InMemoryFileSystem)Parent.FileSystem).Notifier.NotifyCreation(this);
+            }
         }
 
         public void CopyTo(IFileSystemItem where)
@@ -87,22 +95,16 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
         {
             ValidateFileMode(fileMode);
             ValidateFileLock(fileAccess, fileShare);
-
+            EnsureExists();
             Stream.Position = 0;
             return Stream;
         }
 
         void ValidateFileLock(FileAccess fileAccess, FileShare fileShare)
         {
-            // no previous lock, allow
             if (_lock == null)
             {
                 _lock = fileShare;
-                //if (fileAccess == FileAccess.Read)
-                //    Stream.AsRead();
-                //else if (fileAccess == FileAccess.Write)
-                //    Stream.AsWrite();
-                //else if (fileAccess == FileAccess.ReadWrite)
                 Stream.AsReadWrite();
                 return;
             }
@@ -141,7 +143,6 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
                     case FileMode.Create:
                     case FileMode.CreateNew:
                     case FileMode.OpenOrCreate:
-                        Exists = true;
                         CreateNewStream();
                         break;
                     case FileMode.Open:

@@ -3,11 +3,9 @@
 <Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" InitialTargets="_Initialize">
 
   <!-- Default folder locations -->
-
-
   <PropertyGroup>
     <OpenWrap-EnableVisualStudioIntegration Condition="'$(OpenWrap-EnableVisualStudioIntegration)' == '' and '$(BuildingInsideVisualStudio)' == 'true'">true</OpenWrap-EnableVisualStudioIntegration>
-    
+
     <!-- Emit output information post-build for OpenWrap to create packages -->
     <OpenWrap-EmitOutputInstructions Condition="'$(OpenWrap-EmitOutputInstructions)' == ''">false</OpenWrap-EmitOutputInstructions>
 
@@ -26,8 +24,12 @@
     <OpenWrap-TargetProfile Condition="'$(OpenWrap-TargetProfile)' == '' and '$(TargetFrameworkVersion)' == 'v3.0'">net30</OpenWrap-TargetProfile>
     <OpenWrap-TargetProfile Condition="'$(OpenWrap-TargetProfile)' == '' and '$(TargetFrameworkVersion)' == 'v3.5'">net35</OpenWrap-TargetProfile>
     <OpenWrap-TargetProfile Condition="'$(OpenWrap-TargetProfile)' == '' and '$(TargetFrameworkVersion)' == 'v4.0'">net40</OpenWrap-TargetProfile>
-
+    <OpenWrap-TargetPlatform Condition="'$(OpenWrap-TargetPlatform)' == ''">$(Platform)</OpenWrap-TargetPlatform>
+    <OpenWrap-TargetPlatform Condition="'$(OpenWrap-TargetPlatform)' == ''">AnyCPU</OpenWrap-TargetPlatform>
     <OpenWrap-ExportName Condition="'$(OpenWrap-ExportName)' == ''">bin-$(OpenWrap-TargetProfile)</OpenWrap-ExportName>
+
+     <DefineConstants>$(DefineConstants);__OW_PLATFORM_$(OpenWrap-TargetPlatform)__;__OW_PROFILE_$(OpenWrap-TargetProfile)__;</DefineConstants>
+
   </PropertyGroup>
 
 
@@ -38,12 +40,14 @@
     <_WrapFile Include="$(MSBuildProjectDirectory)\..\..\*.wrapdesc" Condition="!Exists(@(_WrapFile->'%(FullPath)'))" />
   </ItemGroup>
   <Target Name="_Initialize">
-    <InitializeOpenWrap StartDebug="$(OpenWrap-StartDebug)" />
+    <InitializeOpenWrap StartDebug="$(OpenWrap-StartDebug)" >
+      <Output TaskParameter="Name" PropertyName="OpenWrap-PackageName" />  
+    </InitializeOpenWrap>
 
     <InitializeVisualStudioIntegration
       WrapDescriptor="@(_WrapFile)"
       WrapsDirectory="$(OpenWrap-ProjectRepositoryPath)"
-      Platform="$(Platform)"
+      Platform="$(OpenWrap-TargetPlatform)"
       Profile="$(OpenWrap-TargetProfile)"
       ProjectFilePath="$(MSBuildProjectFullPath)"
       EnableVisualStudioIntegration="$(OpenWrap-EnableVisualStudioIntegration)"
@@ -66,7 +70,7 @@
     <ResolveWrapReferences
       WrapDescriptor="@(_WrapFile)"
       WrapsDirectory="$(OpenWrap-ProjectRepositoryPath)"
-      Platform="$(Platform)"
+      Platform="$(OpenWrap-TargetPlatform)"
       Profile="$(OpenWrap-TargetProfile)"
       ProjectFilePath="$(MSBuildProjectFullPath)"
       ExcludeAssemblies="$(AssemblyName);$(OpenWrap-ExcludeAssemblies)"
@@ -83,15 +87,11 @@
   </Target>
 
   <Target Name="OpenWrap-BeforeBuild" DependsOnTargets="_Initialize">
-
+    
   </Target>
 
   <Target Name="OpenWrap-AfterBuild"
           Condition="$(OpenWrap-EmitOutputInstructions)">
-    <!-- Descriptor file -->
-    <!--<Message Text="[built(.,'%(_WrapFile.FullPath)')]" />-->
-    <!-- Version file -->
-    <!--<Message Text="[built(.,'@(_WrapFile->'%(RootDir)%(Directory)')version')]" />-->
 
     <!-- Referenced projects -->
     <ItemGroup>
@@ -116,6 +116,10 @@
     <!-- Satellite assemblies-->
     <Message Text="[built($(OpenWrap-ExportName),@(IntermediateSatelliteAssembliesWithTargetPath->'$(OutDir)%(Culture)\$(TargetName).resources.dll;'))]"
              Condition="Exists('@(IntermediateSatelliteAssembliesWithTargetPath)')"/>
+
+    <!-- delete assembly reference cache to prevent VS from not calling the initialize task on next opening -->
+    <Delete Files="$(ResolveAssemblyReferencesStateFile);$(IntermediateOutputPath)*.cache" ContinueOnError="true" />
+    
   </Target>
 
 

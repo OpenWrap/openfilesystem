@@ -2,21 +2,20 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using OpenFileSystem.IO.FileSystems;
 
-namespace OpenFileSystem.IO.FileSystem.Local
+namespace OpenFileSystem.IO.FileSystems.Local
 {
     public abstract class LocalDirectory : AbstractDirectory, IDirectory, IEquatable<IDirectory>
     {
-        protected DirectoryInfo DirectoryInfo { get; private set; }
+        DirectoryInfo DirectoryInfo { get; set; }
 
-        public LocalDirectory(DirectoryInfo directory)
+        protected LocalDirectory(DirectoryInfo directory)
         {
             DirectoryInfo = directory;
             Path = new Path(NormalizeDirectoryPath(DirectoryInfo.FullName));
         }
 
-        public LocalDirectory(string directoryPath)
+        protected LocalDirectory(string directoryPath)
             : this(new DirectoryInfo(directoryPath))
         {
         }
@@ -74,6 +73,11 @@ namespace OpenFileSystem.IO.FileSystem.Local
             {
                 return this;
             }
+        }
+        
+        public IDisposable FileChanges(string filter = "*", bool includeSubdirectories = false, Action<IFile> created = null, Action<IFile> modified = null, Action<IFile> deleted = null, Action<IFile> renamed = null)
+        {
+            return LocalFileSystemNotifier.Instance.RegisterNotification(Path, filter, includeSubdirectories, created, modified, deleted, renamed);
         }
 
         public virtual IEnumerable<IDirectory> Directories(string filter, SearchScope scope)

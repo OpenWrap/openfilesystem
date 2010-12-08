@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace OpenFileSystem.IO.FileSystem.Local
+namespace OpenFileSystem.IO.FileSystems.Local
 {
     public class TemporaryLocalFile : LocalFile, ITemporaryFile
     {

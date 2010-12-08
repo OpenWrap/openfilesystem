@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
 
-namespace OpenFileSystem.IO.FileSystem.Local
+namespace OpenFileSystem.IO
 {
     public class Path : IEquatable<Path>
     {
@@ -12,6 +10,7 @@ namespace OpenFileSystem.IO.FileSystem.Local
 
         public Path(string fullPath)
         {
+            if (string.IsNullOrEmpty(fullPath)) throw new ArgumentNullException("fullPath");
             FullPath = fullPath;
             
             IsRooted = System.IO.Path.IsPathRooted(fullPath);

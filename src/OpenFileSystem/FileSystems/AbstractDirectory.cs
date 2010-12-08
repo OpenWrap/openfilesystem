@@ -1,4 +1,4 @@
-﻿namespace OpenFileSystem.IO.FileSystem
+﻿namespace OpenFileSystem.IO.FileSystems
 {
     public abstract class AbstractDirectory
     {

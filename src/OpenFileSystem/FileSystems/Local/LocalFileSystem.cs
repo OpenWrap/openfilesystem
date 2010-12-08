@@ -1,15 +1,14 @@
 ﻿using System;
-using System.IO;
 using OpenFileSystem.IO.FileSystems.Local.Unix;
 using OpenFileSystem.IO.FileSystems.Local.Win32;
 
-namespace OpenFileSystem.IO.FileSystem.Local
+namespace OpenFileSystem.IO.FileSystems.Local
 {
     public abstract class LocalFileSystem : AbstractFileSystem
     {
         static LocalFileSystem _instance;
         static readonly object _syncRoot = new object();
-        public static IFileSystem Instance
+        public static LocalFileSystem Instance
         {
             get
             {

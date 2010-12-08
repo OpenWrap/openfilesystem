@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using OpenFileSystem.IO.FileSystem.Local;
 
 namespace OpenFileSystem.IO.FileSystems.Local.Win32
 {

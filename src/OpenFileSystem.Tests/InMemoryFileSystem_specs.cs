@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using OpenFileSystem.IO;
-using OpenFileSystem.IO.FileSystem.InMemory;
+using OpenFileSystem.IO.FileSystems.InMemory;
 using OpenWrap.Testing;
 
 namespace OpenFileSystem.Tests
@@ -31,13 +31,13 @@ namespace OpenFileSystem.Tests
         [Test]
         public void can_add_folders_to_fs()
         {
-            var fs = new InMemoryFileSystem(new InMemoryDirectory(@"c:\mordor"));
+            var fs = new InMemoryFileSystem().CreateChildDir(@"c:\mordor");
             fs.Directories.ShouldHaveCountOf(1);
         }
         [Test]
         public void can_add_sub_folders()
         {
-            var fs = new InMemoryFileSystem(new InMemoryDirectory(@"c:\mordor\nurn"));
+            var fs = new InMemoryFileSystem().CreateChildDir(@"c:\mordor\nurn");
             var mordor = fs.GetDirectory(@"c:\mordor");
             mordor.Exists.ShouldBeTrue();
 

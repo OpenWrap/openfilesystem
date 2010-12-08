@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using OpenFileSystem.IO.FileSystems;
 
-namespace OpenFileSystem.IO.FileSystem.Local
+namespace OpenFileSystem.IO.FileSystems.Local
 {
     public class TemporaryDirectory : ITemporaryDirectory
     {
+
         public IDirectory UnderlyingDirectory { get; set; }
 
         public TemporaryDirectory(IDirectory unerlyingDirectory)
@@ -68,6 +68,12 @@ namespace OpenFileSystem.IO.FileSystem.Local
         {
             get { return UnderlyingDirectory.Target; }
         }
+
+        public IDisposable FileChanges(string filter, bool includeSubdirectories, Action<IFile> created, Action<IFile> modified, Action<IFile> deleted, Action<IFile> renamed)
+        {
+            return UnderlyingDirectory.FileChanges(filter, includeSubdirectories, created, modified, deleted, renamed);
+        }
+
 
         public Path Path
         {

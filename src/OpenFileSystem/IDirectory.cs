@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using OpenFileSystem.IO.FileSystems;
 
 namespace OpenFileSystem.IO
@@ -14,7 +15,9 @@ namespace OpenFileSystem.IO
         bool IsHardLink { get; }
         IDirectory LinkTo(string path);
         IDirectory Target { get; }
+        IDisposable FileChanges(string filter = "*", bool includeSubdirectories = false, Action<IFile> created = null, Action<IFile> modified = null, Action<IFile> deleted = null, Action<IFile> renamed = null);
     }
+
     public static class DirectoryExtensions
     {
         public static IEnumerable<IFile> Files(this IDirectory directory, string filter)

@@ -2,17 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using OpenFileSystem.IO.FileSystem.Local;
-using OpenFileSystem.IO.FileSystems;
-using Path = OpenFileSystem.IO.FileSystem.Local.Path;
 
-namespace OpenFileSystem.IO.FileSystem.InMemory
+namespace OpenFileSystem.IO.FileSystems.InMemory
 {
     public class InMemoryDirectory : AbstractDirectory, IDirectory, IEquatable<IDirectory>
     {
         InMemoryDirectory _source;
 
-        public InMemoryDirectory(string directoryPath, params IFileSystemItem[] children)
+        public InMemoryDirectory(InMemoryFileSystem fileSystem, string directoryPath)
         {
             _source = this;
             directoryPath = NormalizeDirectoryPath(directoryPath);
@@ -20,27 +17,28 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
 
             ChildDirectories = new List<InMemoryDirectory>();
             ChildFiles = new List<InMemoryFile>();
-
-            foreach (var childDirectory in children.OfType<InMemoryDirectory>())
-            {
-                childDirectory.Parent = this;
-                childDirectory.Create();
-                ChildDirectories.Add(childDirectory);
-            }
-            foreach (var childFile in children.OfType<InMemoryFile>())
-            {
-                childFile.Parent = this;
-                childFile.Path = Path.Combine(childFile.Path.FullPath);
-                childFile.Create();
-                ChildFiles.Add(childFile);
-            }
+            _fileSystem = fileSystem;
+            //foreach (var childDirectory in children.OfType<InMemoryDirectory>())
+            //{
+            //    childDirectory.Parent = this;
+            //    childDirectory.Create();
+            //    ChildDirectories.Add(childDirectory);
+            //}
+            //foreach (var childFile in children.OfType<InMemoryFile>())
+            //{
+            //    childFile.Parent = this;
+            //    childFile.Path = Path.Combine(childFile.Path.FullPath);
+            //    childFile.Create();
+            //    ChildFiles.Add(childFile);
+            //}
         }
 
         public List<InMemoryDirectory> ChildDirectories { get; set; }
         public List<InMemoryFile> ChildFiles { get; set; }
 
         public bool Exists { get; set; }
-        public IFileSystem FileSystem { get; set; }
+        InMemoryFileSystem _fileSystem;
+        public IFileSystem FileSystem { get { return _fileSystem; } }
         public bool IsHardLink { get; private set; }
 
         public string Name
@@ -59,6 +57,12 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
             get { return _target ?? this; }
             set { _target = value; }
         }
+
+        public IDisposable FileChanges(string filter = "*", bool includeSubdirectories = false, Action<IFile> created = null, Action<IFile> modified = null, Action<IFile> deleted = null, Action<IFile> renamed = null)
+        {
+            return _fileSystem.Notifier.RegisterNotification(Path, filter, includeSubdirectories, created, modified, deleted, renamed);
+        }
+
 
         public override bool Equals(object obj)
         {
@@ -113,10 +117,9 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
 
             if (inMemoryDirectory == null)
             {
-                inMemoryDirectory = new InMemoryDirectory(System.IO.Path.Combine(Path.FullPath, directoryName))
+                inMemoryDirectory = new InMemoryDirectory(_fileSystem, System.IO.Path.Combine(Path.FullPath, directoryName))
                 {
-                        Parent = this,
-                        FileSystem = FileSystem
+                        Parent = this
                 };
                 ChildDirectories.Add(inMemoryDirectory);
             }
@@ -144,7 +147,6 @@ namespace OpenFileSystem.IO.FileSystem.InMemory
                 throw new IOException(string.Format("Cannot create link at location '{0}', a directory already exists.", path));
             linkDirectory.ChildDirectories = this.ChildDirectories;
             linkDirectory.ChildFiles = this.ChildFiles;
-            linkDirectory.FileSystem = this.FileSystem;
             linkDirectory.IsHardLink = true;
             linkDirectory.Exists = true;
             linkDirectory.Target = this;

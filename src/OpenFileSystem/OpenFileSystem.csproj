@@ -56,17 +56,29 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EnumerableExtensions.cs" />
+    <Compile Include="ExecuteOnDispose.cs" />
     <Compile Include="FileExtensions.cs" />
     <Compile Include="FileSystems\AbstractDirectory.cs" />
     <Compile Include="FileSystems\AbstractFileSystem.cs" />
+    <Compile Include="FileSystems\IFileSystemNotifier.cs" />
+    <Compile Include="FileSystems\InMemory\ChildItem.cs" />
+    <Compile Include="FileSystems\InMemory\CreationExtensions.cs" />
     <Compile Include="FileSystems\InMemory\InMemoryDirectory.cs" />
     <Compile Include="FileSystems\InMemory\InMemoryFile.cs" />
     <Compile Include="FileSystems\InMemory\InMemoryFileSystem.cs" />
+    <Compile Include="FileSystems\InMemory\InMemoryFileSystemNotifier.cs" />
+    <Compile Include="FileSystems\InMemory\InMemoryFileSystemNotifierEntry.cs" />
     <Compile Include="FileSystems\InMemory\InMemoryTemporaryDirectory.cs" />
     <Compile Include="FileSystems\InMemory\InMemoryTemporaryFile.cs" />
+    <Compile Include="FileSystems\FileSystemNotificationIdentifier.cs" />
+    <Compile Include="FileSystems\FileSystemNotifier.cs" />
+    <Compile Include="FileSystems\IFileSytemNotifierEntry.cs" />
+    <Compile Include="FileSystems\Local\AggregateException.cs" />
     <Compile Include="FileSystems\Local\LocalDirectory.cs" />
     <Compile Include="FileSystems\Local\LocalFile.cs" />
     <Compile Include="FileSystems\Local\LocalFileSystem.cs" />
+    <Compile Include="FileSystems\Local\LocalFileSystemNotifier.cs" />
+    <Compile Include="FileSystems\Local\LocalFileSystemNotifierEntry.cs" />
     <Compile Include="Path.cs" />
     <Compile Include="SearchScope.cs" />
     <Compile Include="FileSystems\Local\TemporaryDirectory.cs" />

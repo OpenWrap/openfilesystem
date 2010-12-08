@@ -1,4 +1,4 @@
-﻿namespace OpenFileSystem.IO.FileSystem.InMemory
+﻿namespace OpenFileSystem.IO.FileSystems.InMemory
 {
     public class InMemoryTemporaryFile : InMemoryFile,  ITemporaryFile
     {
