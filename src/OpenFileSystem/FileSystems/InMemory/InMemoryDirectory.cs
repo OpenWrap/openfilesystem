@@ -68,7 +68,7 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
         {
             lock (ChildDirectories)
             {
-                return ChildDirectories.Where(x => x.Exists).Cast<IDirectory>();
+                return ChildDirectories.Where(x => x.Exists).Cast<IDirectory>().ToList();
             }
         }
 
@@ -79,9 +79,9 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
             {
                 var immediateChildren = ChildDirectories.Where(x => x.Exists && filterRegex.IsMatch(x.Name)).Cast<IDirectory>();
                 return scope == SearchScope.CurrentOnly
-                           ? immediateChildren
+                           ? immediateChildren.ToList()
                            : immediateChildren
-                                 .Concat(ChildDirectories.SelectMany(x => x.Directories(filter, scope)));
+                                 .Concat(ChildDirectories.SelectMany(x => x.Directories(filter, scope))).ToList();
             }
         }
 
@@ -89,20 +89,21 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
         {
             lock (ChildFiles)
             {
-                return ChildFiles.Where(x => x.Exists).Cast<IFile>();
+                return ChildFiles.Where(x => x.Exists).Cast<IFile>().ToList();
             }
         }
 
         public IEnumerable<IFile> Files(string filter, SearchScope searchScope)
         {
             lock (ChildFiles)
-            {
-                var filterRegex = filter.Wildcard();
-                var immediateChildren = ChildFiles.Where(x => x.Exists && filterRegex.IsMatch(x.Name)).Cast<IFile>();
-                return searchScope == SearchScope.CurrentOnly
-                           ? immediateChildren
-                           : immediateChildren.Concat(ChildDirectories.SelectMany(x => x.Files(filter, searchScope)));
-            }
+                lock (ChildDirectories)
+                {
+                    var filterRegex = filter.Wildcard();
+                    var immediateChildren = ChildFiles.Where(x => x.Exists && filterRegex.IsMatch(x.Name)).Cast<IFile>();
+                    return searchScope == SearchScope.CurrentOnly
+                               ? immediateChildren.ToList()
+                               : immediateChildren.Concat(ChildDirectories.SelectMany(x => x.Files(filter, searchScope))).ToList();
+                }
         }
 
         public IDirectory GetDirectory(string directoryName)
@@ -185,21 +186,23 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
             newDirectory.Exists = true;
             lock (ChildFiles)
                 lock (ChildDirectories)
-                {
-                    newDirectory.ChildFiles = this.ChildFiles;
-                    newDirectory.ChildDirectories = this.ChildDirectories;
+                    lock (newDirectory.ChildFiles)
+                        lock (newDirectory.ChildDirectories)
+                        {
+                            newDirectory.ChildFiles = this.ChildFiles;
+                            newDirectory.ChildDirectories = this.ChildDirectories;
 
-                    foreach (var file in newDirectory.ChildFiles.OfType<InMemoryFile>())
-                        file.Parent = newDirectory;
+                            foreach (var file in newDirectory.ChildFiles.OfType<InMemoryFile>())
+                                file.Parent = newDirectory;
 
-                    foreach (var file in newDirectory.ChildDirectories.OfType<InMemoryDirectory>())
-                        file.Parent = newDirectory;
+                            foreach (var file in newDirectory.ChildDirectories.OfType<InMemoryDirectory>())
+                                file.Parent = newDirectory;
 
-                    this.Exists = false;
-                    ChildFiles = new List<InMemoryFile>();
-                    ChildDirectories = new List<InMemoryDirectory>();
+                            this.Exists = false;
+                            ChildFiles = new List<InMemoryFile>();
+                            ChildDirectories = new List<InMemoryDirectory>();
 
-                }
+                        }
         }
 
         public IDirectory Create()

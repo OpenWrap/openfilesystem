@@ -72,8 +72,10 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
                 Exists = true,
                 Parent = sysTemp
             };
-            
-            sysTemp.ChildDirectories.Add(tempDirectory);
+            lock (sysTemp.ChildDirectories)
+            {
+                sysTemp.ChildDirectories.Add(tempDirectory);
+            }
             return tempDirectory;
         }
 
