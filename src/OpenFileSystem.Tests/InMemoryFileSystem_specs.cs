@@ -45,6 +45,21 @@ namespace OpenFileSystem.Tests
             nurn.Path.FullPath.ShouldBe(@"c:\mordor\nurn\");
             nurn.Exists.ShouldBeTrue();
         }
+        [Test]
+        public void can_move_folder()
+        {
+            var fs = new InMemoryFileSystem();
+            var source = fs.GetDirectory("c:\\source");
+            source.GetFile("mordor.txt").MustExist();
+            var destination = fs.GetDirectory("c:\\destination");
+            source.MoveTo(destination);
+
+            source.GetFile("mordor.txt").Exists.ShouldBeFalse();
+            source.Exists.ShouldBeFalse();
+
+            destination.Exists.ShouldBeTrue();
+            destination.GetFile("mordor.txt").Exists.ShouldBeTrue();
+        }
     }
     namespace context
     {

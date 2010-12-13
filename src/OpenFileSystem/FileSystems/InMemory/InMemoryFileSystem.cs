@@ -22,9 +22,12 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
         InMemoryDirectory GetRoot(string path)
         {
             InMemoryDirectory directory;
-            if (!Directories.TryGetValue(path, out directory))
+            lock (Directories)
             {
-                Directories.Add(path, directory = new InMemoryDirectory(this, path));
+                if (!Directories.TryGetValue(path, out directory))
+                {
+                    Directories.Add(path, directory = new InMemoryDirectory(this, path));
+                }
             }
             return directory;
         }
@@ -69,6 +72,7 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
                 Exists = true,
                 Parent = sysTemp
             };
+            
             sysTemp.ChildDirectories.Add(tempDirectory);
             return tempDirectory;
         }

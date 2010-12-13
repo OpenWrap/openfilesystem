@@ -18,19 +18,6 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
             ChildDirectories = new List<InMemoryDirectory>();
             ChildFiles = new List<InMemoryFile>();
             _fileSystem = fileSystem;
-            //foreach (var childDirectory in children.OfType<InMemoryDirectory>())
-            //{
-            //    childDirectory.Parent = this;
-            //    childDirectory.Create();
-            //    ChildDirectories.Add(childDirectory);
-            //}
-            //foreach (var childFile in children.OfType<InMemoryFile>())
-            //{
-            //    childFile.Parent = this;
-            //    childFile.Path = Path.Combine(childFile.Path.FullPath);
-            //    childFile.Create();
-            //    ChildFiles.Add(childFile);
-            //}
         }
 
         public List<InMemoryDirectory> ChildDirectories { get; set; }
@@ -79,64 +66,80 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
 
         public IEnumerable<IDirectory> Directories()
         {
-            return ChildDirectories.Where(x => x.Exists).Cast<IDirectory>();
+            lock (ChildDirectories)
+            {
+                return ChildDirectories.Where(x => x.Exists).Cast<IDirectory>();
+            }
         }
 
         public IEnumerable<IDirectory> Directories(string filter, SearchScope scope)
         {
             var filterRegex = filter.Wildcard();
-            var immediateChildren = ChildDirectories.Where(x => x.Exists && filterRegex.IsMatch(x.Name)).Cast<IDirectory>();
-            return scope == SearchScope.CurrentOnly
-                       ? immediateChildren
-                       : immediateChildren
-                             .Concat(ChildDirectories.SelectMany(x => x.Directories(filter, scope)));
+            lock (ChildDirectories)
+            {
+                var immediateChildren = ChildDirectories.Where(x => x.Exists && filterRegex.IsMatch(x.Name)).Cast<IDirectory>();
+                return scope == SearchScope.CurrentOnly
+                           ? immediateChildren
+                           : immediateChildren
+                                 .Concat(ChildDirectories.SelectMany(x => x.Directories(filter, scope)));
+            }
         }
 
         public IEnumerable<IFile> Files()
         {
-            return ChildFiles.Where(x => x.Exists).Cast<IFile>();
+            lock (ChildFiles)
+            {
+                return ChildFiles.Where(x => x.Exists).Cast<IFile>();
+            }
         }
 
         public IEnumerable<IFile> Files(string filter, SearchScope searchScope)
         {
-            var filterRegex = filter.Wildcard();
-            var immediateChildren = ChildFiles.Where(x => x.Exists && filterRegex.IsMatch(x.Name)).Cast<IFile>();
-            return searchScope == SearchScope.CurrentOnly
-                ? immediateChildren
-                : immediateChildren.Concat(ChildDirectories.SelectMany(x => x.Files(filter, searchScope)));
+            lock (ChildFiles)
+            {
+                var filterRegex = filter.Wildcard();
+                var immediateChildren = ChildFiles.Where(x => x.Exists && filterRegex.IsMatch(x.Name)).Cast<IFile>();
+                return searchScope == SearchScope.CurrentOnly
+                           ? immediateChildren
+                           : immediateChildren.Concat(ChildDirectories.SelectMany(x => x.Files(filter, searchScope)));
+            }
         }
 
         public IDirectory GetDirectory(string directoryName)
         {
             if (System.IO.Path.IsPathRooted(directoryName))
                 return FileSystem.GetDirectory(directoryName);
-
-            var inMemoryDirectory =
-                    ChildDirectories.FirstOrDefault(x => x.Name.Equals(directoryName, _stringComparison));
-
-
-            if (inMemoryDirectory == null)
+            InMemoryDirectory inMemoryDirectory;
+            lock (ChildDirectories)
             {
-                inMemoryDirectory = new InMemoryDirectory(_fileSystem, System.IO.Path.Combine(Path.FullPath, directoryName))
-                {
-                        Parent = this
-                };
-                ChildDirectories.Add(inMemoryDirectory);
-            }
+                inMemoryDirectory = ChildDirectories.FirstOrDefault(x => x.Name.Equals(directoryName, _stringComparison));
 
+
+                if (inMemoryDirectory == null)
+                {
+                    inMemoryDirectory = new InMemoryDirectory(_fileSystem, System.IO.Path.Combine(Path.FullPath, directoryName))
+                    {
+                        Parent = this
+                    };
+                    ChildDirectories.Add(inMemoryDirectory);
+                }
+            }
 
             return inMemoryDirectory;
         }
         public IFile GetFile(string fileName)
         {
-            var file = ChildFiles.FirstOrDefault(x => x.Name.Equals(fileName, _stringComparison));
-            if (file == null)
+            InMemoryFile file;
+            lock (ChildFiles)
             {
-                file = new InMemoryFile(Path.Combine(fileName).FullPath) { Parent = this };
-                ChildFiles.Add(file);
+                file = ChildFiles.FirstOrDefault(x => x.Name.Equals(fileName, _stringComparison));
+                if (file == null)
+                {
+                    file = new InMemoryFile(Path.Combine(fileName).FullPath) { Parent = this };
+                    ChildFiles.Add(file);
+                }
+                file.FileSystem = this.FileSystem;
             }
-            file.FileSystem = this.FileSystem;
-
             return file;
         }
 
@@ -180,17 +183,23 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
             if (!item.Path.IsRooted) throw new ArgumentException("Has to be a fully-qualified path for a move to succeed.");
             var newDirectory = (InMemoryDirectory)FileSystem.GetDirectory(item.Path.FullPath);
             newDirectory.Exists = true;
-            newDirectory.ChildFiles = this.ChildFiles;
-            newDirectory.ChildDirectories = this.ChildDirectories;
-            foreach(var file in newDirectory.ChildFiles.OfType<InMemoryFile>())
-                file.Parent = newDirectory;
-            
-            foreach(var file in newDirectory.ChildDirectories.OfType<InMemoryDirectory>())
-                file.Parent = newDirectory;
+            lock (ChildFiles)
+                lock (ChildDirectories)
+                {
+                    newDirectory.ChildFiles = this.ChildFiles;
+                    newDirectory.ChildDirectories = this.ChildDirectories;
 
-            this.Exists = false;
-            ChildFiles.Clear();
-            ChildDirectories.Clear();
+                    foreach (var file in newDirectory.ChildFiles.OfType<InMemoryFile>())
+                        file.Parent = newDirectory;
+
+                    foreach (var file in newDirectory.ChildDirectories.OfType<InMemoryDirectory>())
+                        file.Parent = newDirectory;
+
+                    this.Exists = false;
+                    ChildFiles = new List<InMemoryFile>();
+                    ChildDirectories = new List<InMemoryDirectory>();
+
+                }
         }
 
         public IDirectory Create()
@@ -199,10 +208,6 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
             if (Parent != null && !Parent.Exists)
                 Parent.Create();
             return this;
-        }
-
-        public void Move(Path newFileName)
-        {
         }
 
         public override string ToString()
