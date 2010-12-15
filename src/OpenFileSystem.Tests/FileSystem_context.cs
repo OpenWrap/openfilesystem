@@ -14,9 +14,22 @@ using Path = OpenFileSystem.IO.Path;
 
 namespace OpenWrap.Tests.IO
 {
-
-    public abstract class file_system<T> : context where T : IFileSystem
+    public class TestInMemoryFileSystem : InMemoryFileSystem
     {
+        public TestInMemoryFileSystem()
+        {
+            this.CurrentDirectory = Environment.CurrentDirectory;
+        }
+    }
+    [TestFixture(typeof(TestInMemoryFileSystem))]
+    [TestFixture(typeof(TestLocalFileSystem))]
+    public class file_system<T> : context where T : IFileSystem, new()
+    {
+        public file_system()
+        {
+            CurrentDirectory = Environment.CurrentDirectory;
+            FileSystem = new T();
+        }
         [Test]
         public void receives_creation_notification()
         {
@@ -58,14 +71,14 @@ namespace OpenWrap.Tests.IO
         [Test]
         public void directories_always_created()
         {
-            var directory = FileSystem.GetDirectory(@"c:\test\test.html");
+            var directory = FileSystem.GetDirectory(@"C:\test\test.html");
 
             directory.Exists.ShouldBeFalse();
         }
         [Test]
         public void created_directory_exists()
         {
-            var directory = FileSystem.CreateDirectory(@"c:\test\temp.html");
+            var directory = FileSystem.CreateDirectory(@"C:\test\temp.html");
 
             directory.Exists.ShouldBeTrue();
         }
@@ -73,15 +86,15 @@ namespace OpenWrap.Tests.IO
         [Test]
         public void can_get_subdirectory_of_non_existant_directory()
         {
-            FileSystem.GetDirectory(@"c:\mordor").GetDirectory(@"shire\galladrin")
-                .Path.FullPath.ShouldBe(@"c:\mordor\shire\galladrin\");
+            FileSystem.GetDirectory(@"C:\mordor").GetDirectory(@"shire\galladrin")
+                .Path.FullPath.ShouldBe(@"C:\mordor\shire\galladrin\");
         }
 
         [Test]
         public void can_get_file_with_directory_path()
         {
-            FileSystem.GetDirectory(@"c:\mordor").GetFile(@"shire\frodo.txt")
-                .Path.FullPath.ShouldBe(@"c:\mordor\shire\frodo.txt");
+            FileSystem.GetDirectory(@"C:\mordor").GetFile(@"shire\frodo.txt")
+                .Path.FullPath.ShouldBe(@"C:\mordor\shire\frodo.txt");
         }
         [Test]
         public void directory_is_resolved_relative_to_current_directory()
@@ -137,7 +150,7 @@ namespace OpenWrap.Tests.IO
         [Test]
         public void non_existant_file_opened_for_write_is_created_automatically()
         {
-            var file = FileSystem.GetFile(@"c:\mordor\elves.txt");
+            var file = FileSystem.GetFile(@"C:\mordor\elves.txt");
             file.Exists.ShouldBeFalse();
             file.OpenWrite().Close();
             file.Exists.ShouldBeTrue();
@@ -146,15 +159,15 @@ namespace OpenWrap.Tests.IO
         [Test]
         public void file_paths_are_normalized()
         {
-            var file = FileSystem.GetFile(@"c:\\folder\\file");
-            file.Path.FullPath.ShouldBe(@"c:\folder\file");
+            var file = FileSystem.GetFile(@"C:\\folder\\file");
+            file.Path.FullPath.ShouldBe(@"C:\folder\file");
         }
 
         [Test]
         public void trailing_slash_is_not_significant()
         {
-            var first = FileSystem.GetDirectory(@"c:\mordor");
-            var second = FileSystem.GetDirectory(@"c:\mordor\");
+            var first = FileSystem.GetDirectory(@"C:\mordor");
+            var second = FileSystem.GetDirectory(@"C:\mordor\");
 
             first.ShouldBe(second);
         }
@@ -186,7 +199,7 @@ namespace OpenWrap.Tests.IO
         [Test]
         public void different_directories_are_not_equal()
         {
-            FileSystem.GetDirectory(@"c:\tmp\1\").ShouldNotBe(FileSystem.GetDirectory(@"c:\tmp\2\"));
+            FileSystem.GetDirectory(@"C:\tmp\1\").ShouldNotBe(FileSystem.GetDirectory(@"C:\tmp\2\"));
 
         }
         [Test]
@@ -270,66 +283,150 @@ namespace OpenWrap.Tests.IO
         [Test]
         public void open_write_with_truncate_creates_a_new_stream()
         {
-            using (var temporaryFile = given_file("Hello"))
+            using (var temporaryFile = given_temp_file("Hello"))
             using (var writer = temporaryFile.Open(FileMode.Truncate, FileAccess.Write, FileShare.None))
                 writer.Length.ShouldBe(0);
         }
         [Test]
         public void open_write_with_create_creates_a_new_stream()
         {
-            using (var temporaryFile = given_file("Hello"))
+            using (var temporaryFile = given_temp_file("Hello"))
             using (var writer = temporaryFile.Open(FileMode.Create, FileAccess.Write, FileShare.None))
                 writer.Length.ShouldBe(0);
         }
         [Test]
-        protected ITemporaryFile given_file(string content)
+        public void copy_files_copies_content()
+        {
+            using (var tempDir = FileSystem.CreateTempDirectory())
+            {
+                var tempFile = tempDir.GetFile("test.txt");
+                WriteString(tempFile, "test data");
+                var copyFile = tempDir.GetFile("test2.txt");
+                tempFile.CopyTo(copyFile);
+
+                ReadString(tempFile).ShouldBe("test data");
+                ReadString(copyFile).ShouldBe("test data");
+
+            }
+        }
+        [Test]
+        public void can_read_data_from_two_readers()
+        {
+            using(var file = given_temp_file("content"))
+            {
+                using(var first = file.Open(FileMode.Open, FileAccess.Read, FileShare.Read))
+                using(var second = file.Open(FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    first.ReadByte().ShouldBe('c');
+                    second.ReadByte().ShouldBe('c');
+                }
+            }
+        }
+
+        [Test]
+        public void duplicates_directory_content_when_copyto_called()
+        {
+            using(var source = FileSystem.CreateTempDirectory())
+            using (var destination = FileSystem.CreateTempDirectory())
+            {
+                WriteString(source.GetFile("test.txt"), "test data");
+                WriteString(source.GetDirectory("testDir").GetFile("test2.txt"), "test data2");
+
+                source.CopyTo(destination);
+
+                destination.GetFile("test.txt")
+                    .Check(x=>x.Exists.ShouldBeTrue())
+                    .Check(x=> ReadString(x).ShouldBe("test data"));
+                var dest = destination.GetDirectory("testDir");
+
+                dest.Exists.ShouldBeTrue();
+                var destFile = dest.GetFile("test2.txt");
+                destFile.Exists.ShouldBeTrue();
+                ReadString(destFile).ShouldBe("test data2");
+
+            }
+        }
+        protected ITemporaryFile given_temp_file(string content)
         {
             var temporaryFile = FileSystem.CreateTempFile();
-            using (var writer = temporaryFile.OpenWrite())
-                writer.Write(Encoding.UTF8.GetBytes("Hello"));
+            WriteString(temporaryFile, content);
 
             return temporaryFile;
         }
+        string ReadString(IFile file)
+        {
+            using (var reader = file.OpenRead())
+            {
+                var stream = new MemoryStream();
+                reader.CopyTo(stream);
 
-        protected IFileSystem FileSystem { get; set; }
+                return Encoding.UTF8.GetString(stream.ToArray());
+            }
+        }
+
+        void WriteString(IFile temporaryFile, string content)
+        {
+            using (var writer = temporaryFile.OpenWrite())
+                writer.Write(Encoding.UTF8.GetBytes(content));
+        }
+
+
+        protected IFileSystem FileSystem { get; private set; }
         protected string CurrentDirectory { get; set; }
     }
 
-    public class in_memory_fs : file_system<InMemoryFileSystem>
+    public class TestLocalFileSystem : IFileSystem
     {
-        [SetUp]
-        public void setup()
+        public IDirectory GetDirectory(string directoryPath)
         {
-            CurrentDirectory = @"c:\mordor";
-            FileSystem = new InMemoryFileSystem
-            {
-                    CurrentDirectory = CurrentDirectory
-            }.CreateChildDir(@"c:\mordor", mordor=>mordor.CreateChildFile("rings.txt"));
+            return _local.GetDirectory(directoryPath);
         }
+
+        public Path GetPath(string path)
+        {
+            return _local.GetPath(path);
+        }
+
+        public ITemporaryDirectory CreateTempDirectory()
+        {
+            return _local.CreateTempDirectory();
+        }
+
+        public IDirectory CreateDirectory(string path)
+        {
+            return _local.CreateDirectory(path);
+        }
+
+        public IFile GetFile(string itemSpec)
+        {
+            return _local.GetFile(itemSpec);
+        }
+
+        public ITemporaryFile CreateTempFile()
+        {
+            return _local.CreateTempFile();
+        }
+
+        public IDirectory GetTempDirectory()
+        {
+            return _local.GetTempDirectory();
+        }
+
+        IFileSystem _local = LocalFileSystem.Instance;
     }
 
-    public class local_fs : file_system<LocalFileSystem>
-    {
-        [SetUp]
-        public void setup()
-        {
-            CurrentDirectory = Environment.CurrentDirectory;
-
-            FileSystem = LocalFileSystem.Instance;
-        }
-    }
     public class path_specification : context
     {
         [Test]
         public void path_has_segments()
         {
-            var path = new Path(@"c:\mordor\nurn");
-            path.Segments.ShouldHaveSameElementsAs(new[] { @"c:", "mordor", "nurn" });
+            var path = new Path(@"C:\mordor\nurn");
+            path.Segments.ShouldHaveSameElementsAs(new[] { @"C:", "mordor", "nurn" });
         }
         [Test]
         public void trailing_slash_is_always_normalized()
         {
-            new Path(@"c:\mordor\nurn").ShouldBe(new Path(@"c:\mordor\nurn\"));
+            new Path(@"C:\mordor\nurn").ShouldBe(new Path(@"C:\mordor\nurn\"));
         }
     }
 }

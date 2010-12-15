@@ -5,6 +5,7 @@ using System.Threading;
 
 namespace OpenFileSystem.IO.FileSystems.InMemory
 {
+    
     public class InMemoryFileSystem : IFileSystem
     {
         readonly object _syncRoot = new object();

@@ -107,7 +107,21 @@ namespace OpenFileSystem.IO.FileSystems.Local
 
         public void CopyTo(IFileSystemItem item)
         {
-            File.Copy(_filePath, item.Path.FullPath);
+            string destinationPath;
+
+            if (item is IDirectory)
+            {
+                ((IDirectory)item).MustExist();
+                destinationPath = item.Path.Combine(Name).FullPath;
+            }
+            else
+            {
+                item.Parent.MustExist();
+                destinationPath = ((IFile)item).Path.FullPath;
+            }
+            
+            
+            File.Copy(_filePath, destinationPath);
         }
 
         public void MoveTo(IFileSystemItem item)
@@ -123,11 +137,6 @@ namespace OpenFileSystem.IO.FileSystems.Local
 
             File.Create(Path.FullPath).Close();
             return this;
-        }
-
-        public void Move(Path newFileName)
-        {
-            File.Move(Path.FullPath, newFileName.FullPath);
         }
     }
 }

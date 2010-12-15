@@ -176,7 +176,17 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
 
         public void CopyTo(IFileSystemItem item)
         {
-            throw new NotImplementedException();
+            if (item is IFile)
+                throw new IOException("Cannot copy a directory to a file.");
+            var target = (IDirectory)item;
+            lock(ChildFiles)
+                lock(ChildDirectories)
+                {
+                    foreach(var file in ChildFiles)
+                        file.CopyTo(target.GetFile(file.Name));
+                    foreach (var dir in ChildDirectories)
+                        dir.CopyTo(target.GetDirectory(dir.Name).MustExist());
+                }
         }
 
         public void MoveTo(IFileSystemItem item)

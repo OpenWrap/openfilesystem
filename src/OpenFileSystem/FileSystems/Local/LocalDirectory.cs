@@ -138,13 +138,16 @@ namespace OpenFileSystem.IO.FileSystems.Local
         }
         public void CopyTo(IFileSystemItem newItem)
         {
+            IDirectory destDir = (IDirectory)newItem;
+
             DirectoryInfo.Refresh();
             if (!DirectoryInfo.Exists)
                 DirectoryInfo.Create();
             foreach (var file in Files())
                 file.CopyTo(newItem);
             foreach(var directory in Directories())
-                directory.CopyTo(GetDirectory(Name));
+                directory.CopyTo(destDir.GetDirectory(directory.Name).MustExist());
+            DirectoryInfo.Refresh();
         }
         public bool Equals(IDirectory other)
         {
