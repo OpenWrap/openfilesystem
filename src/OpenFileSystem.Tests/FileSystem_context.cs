@@ -43,10 +43,11 @@ namespace OpenWrap.Tests.IO
 
         protected ITemporaryDirectory TempDir { get; set; }
 
-        protected ITemporaryFile given_temp_file(string content)
+        protected ITemporaryFile given_temp_file(string content = null)
         {
             var temporaryFile = FileSystem.CreateTempFile();
-            WriteString(temporaryFile, content);
+            if (content != null)
+                WriteString(temporaryFile, content);
 
             return temporaryFile;
         }

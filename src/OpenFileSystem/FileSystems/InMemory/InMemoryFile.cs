@@ -101,6 +101,21 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
 
         public string NameWithoutExtension { get; private set; }
 
+        public string Extension
+        {
+            get { return System.IO.Path.GetExtension(Name); }
+        }
+
+        public long Size
+        {
+            get 
+            {
+                if (!Exists) 
+                    throw new FileNotFoundException();
+                return _contentLength;
+            }
+        }
+
         public DateTime? LastModifiedTimeUtc
         {
             get;

@@ -3,7 +3,7 @@ using System.IO;
 using OpenFileSystem.IO;
 using OpenWrap.Testing;
 
-namespace OpenFileSystem.Tests.open_for_write
+namespace OpenFileSystem.Tests
 {
     public static class StreamExtensions
     {

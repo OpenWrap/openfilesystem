@@ -65,6 +65,16 @@ namespace OpenFileSystem.IO.FileSystems.Local
             get { return System.IO.Path.GetFileNameWithoutExtension(_filePath); }
         }
 
+        public string Extension
+        {
+            get { return System.IO.Path.GetExtension(_filePath); }
+        }
+
+        public long Size
+        {
+            get { return new FileInfo(_filePath).Length; }
+        }
+
         public DateTime? LastModifiedTimeUtc
         {
             get { return Exists ? new FileInfo(_filePath).LastWriteTimeUtc : (DateTime?)null; }
