@@ -85,7 +85,13 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
         }
 
         public IFileSystem FileSystem { get; set; }
-        public bool Exists { get; set; }
+        bool _exists;
+        public bool Exists
+        {
+            get { return _exists; }
+            set { _exists = value; }
+        }
+
         public string Name { get; private set; }
         public void Delete()
         {
@@ -103,10 +109,27 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
 
         public Stream Open(FileMode fileMode, FileAccess fileAccess, FileShare fileShare)
         {
-            EnsureExists();
+            ValidateFileAccess(fileMode, fileAccess);
+
             var beginPosition = ValidateFileMode(fileMode);
             ValidateFileLock(fileAccess, fileShare);
-            return new FileStreamDouble(new InMemFileStream(this) { Position = beginPosition }, FileStreamClosed);
+            return new FileStreamDouble(new InMemFileStream(this, fileAccess)
+            {
+                Position = beginPosition
+            }, FileStreamClosed);
+        }
+
+        void ValidateFileAccess(FileMode fileMode, FileAccess fileAccess)
+        {
+            if (
+                ((fileMode == FileMode.Append)
+                    && fileAccess != FileAccess.Write) ||
+                ((fileMode == FileMode.CreateNew || fileMode == FileMode.Create || fileMode == FileMode.Truncate)
+                     && (fileAccess != FileAccess.Write && fileAccess != FileAccess.ReadWrite)) ||
+                false//((Exists && fileMode == FileMode.OpenOrCreate && fileAccess == FileAccess.Write))
+                )
+                throw new ArgumentException(string.Format("Can only open files in {0} mode when requesting FileAccess.Write access.", fileMode));
+
         }
 
         void VerifyExists()
@@ -175,11 +198,13 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
         class InMemFileStream : Stream
         {
             readonly InMemoryFile _file;
+            readonly FileAccess _fileAccess;
             long _position = 0;
 
-            public InMemFileStream(InMemoryFile file)
+            public InMemFileStream(InMemoryFile file, FileAccess fileAccess)
             {
                 _file = file;
+                _fileAccess = fileAccess;
             }
 
             public override void Flush()
@@ -224,7 +249,6 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
 
             public override int Read(byte[] buffer, int offset, int count)
             {
-
                 var end = _position+count;
                 var fileSize = _file._contentLength;
                 long maxLengthToRead = end > fileSize ? fileSize - _position : count;
@@ -247,7 +271,7 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
 
             public override bool CanRead
             {
-                get { return true; }
+                get { return _fileAccess == FileAccess.Read || _fileAccess ==FileAccess.ReadWrite; }
             }
 
             public override bool CanSeek
@@ -257,7 +281,7 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
 
             public override bool CanWrite
             {
-                get { return true; }
+                get { return _fileAccess == FileAccess.Write || _fileAccess==FileAccess.ReadWrite; }
             }
 
             public override long Length

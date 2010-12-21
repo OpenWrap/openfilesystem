@@ -95,8 +95,11 @@ namespace OpenFileSystem.IO.FileSystems.Local
 
         public Stream Open(FileMode fileMode, FileAccess fileAccess, FileShare fileShare)
         {
-            if (!Exists)
-                Create();
+            if (!Exists && !Parent.Exists)
+            {
+                if (fileMode == FileMode.Create || fileMode == FileMode.CreateNew || fileMode == FileMode.OpenOrCreate)
+                    Parent.Create();
+            }
             return File.Open(_filePath, fileMode, fileAccess, fileShare);
         }
 
