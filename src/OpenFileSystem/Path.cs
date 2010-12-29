@@ -78,5 +78,45 @@ namespace OpenFileSystem.IO
         {
             return !Equals(left, right);
         }
+
+        public static implicit operator string(Path path)
+        {
+            return path.ToString();
+        }
+        public Path MakeRelative(Path path)
+        {
+            if (!IsRooted)
+                return this;
+            List<string> leftOverSegments = new List<string>();
+            int relativeSegmentCount = 0;
+
+
+            var thisEnum = Segments.GetEnumerator();
+            var rootEnum = path.Segments.GetEnumerator();
+
+            bool thisHasValue;
+            bool rootHasValue;
+            do
+            {
+                thisHasValue = thisEnum.MoveNext();
+                rootHasValue = rootEnum.MoveNext();
+
+                if (thisHasValue && rootHasValue)
+                {
+                    if (thisEnum.Current.Equals(rootEnum.Current, StringComparison.OrdinalIgnoreCase))
+                        continue;
+                }
+                if (thisHasValue)
+                {
+                    leftOverSegments.Add(thisEnum.Current);
+                }
+                if (rootHasValue)
+                    relativeSegmentCount++;
+            } while (thisHasValue || rootHasValue);
+
+            var relativeSegment = Enumerable.Repeat("..", relativeSegmentCount).Aggregate("", System.IO.Path.Combine);
+            var finalSegment = System.IO.Path.Combine(relativeSegment, leftOverSegments.Aggregate("", System.IO.Path.Combine));
+            return new Path(finalSegment);
+        }
     }
 }

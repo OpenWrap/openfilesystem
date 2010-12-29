@@ -1,4 +1,6 @@
-﻿namespace OpenFileSystem.IO.FileSystems
+﻿using System;
+
+namespace OpenFileSystem.IO.FileSystems
 {
     public abstract class AbstractFileSystem : IFileSystem
     {
@@ -9,5 +11,6 @@
         public abstract IFile GetFile(string itemSpec);
         public abstract Path GetPath(string path);
         public abstract IDirectory GetTempDirectory();
+        public abstract IDirectory GetCurrentDirectory();
     }
 }

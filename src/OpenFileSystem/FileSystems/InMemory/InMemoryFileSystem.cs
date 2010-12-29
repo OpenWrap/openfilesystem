@@ -34,12 +34,21 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
         }
         public IDirectory GetDirectory(string directoryPath)
         {
+            directoryPath = EnsureTerminatedByDirectorySeparator(directoryPath);
             var resolvedDirectoryPath = System.IO.Path.GetFullPath(System.IO.Path.Combine(CurrentDirectory,directoryPath));
             var pathSegments = new Path(resolvedDirectoryPath).Segments;
             return pathSegments
                 .Skip(1)
                 .Aggregate((IDirectory)GetRoot(pathSegments.First()),
                     (current, segment) => current.GetDirectory(segment));
+        }
+
+        string EnsureTerminatedByDirectorySeparator(string directoryPath)
+        {
+            return directoryPath.EndsWith(System.IO.Path.DirectorySeparatorChar + string.Empty)
+                   || directoryPath.EndsWith(System.IO.Path.AltDirectorySeparatorChar + string.Empty)
+                       ? directoryPath
+                       : directoryPath + System.IO.Path.DirectorySeparatorChar;
         }
 
         public IFile GetFile(string filePath)
@@ -113,6 +122,11 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
                 }
             }
             return _systemTempDirectory;
+        }
+
+        public IDirectory GetCurrentDirectory()
+        {
+            return GetDirectory(CurrentDirectory);
         }
 
         public string CurrentDirectory { get; set; }

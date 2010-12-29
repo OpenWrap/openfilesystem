@@ -68,5 +68,9 @@ namespace OpenFileSystem.IO.FileSystems.Local
         {
             return new Path(path);
         }
+        public override IDirectory GetCurrentDirectory()
+        {
+            return GetDirectory(System.Environment.CurrentDirectory);
+        }
     }
 }

@@ -74,6 +74,18 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
 
         public IEnumerable<IDirectory> Directories(string filter, SearchScope scope)
         {
+            var path = new Path(filter);
+            if (path.IsRooted)
+            {
+                var directory = FileSystem.GetDirectory(path.Segments.First());
+                return path.Segments.Count() == 1
+                           ? new[] { directory }
+                           : directory
+                                 .Directories(string.Join("\\", path.Segments.Skip(1)
+                                                                             .DefaultIfEmpty("*")
+                                                                             .ToArray()));
+            }
+
             var filterRegex = filter.Wildcard();
             lock (ChildDirectories)
             {

@@ -10,5 +10,6 @@
         IFile GetFile(string itemSpec);
         ITemporaryFile CreateTempFile();
         IDirectory GetTempDirectory();
+        IDirectory GetCurrentDirectory();
     }
 }
