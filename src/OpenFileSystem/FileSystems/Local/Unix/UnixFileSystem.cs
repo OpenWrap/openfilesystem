@@ -11,7 +11,7 @@ namespace OpenFileSystem.IO.FileSystems.Local.Unix
 
         public override IDirectory GetTempDirectory()
         {
-            throw new NotImplementedException();
+            return new UnixDirectory(System.IO.Path.GetTempPath());
         }
 
     }

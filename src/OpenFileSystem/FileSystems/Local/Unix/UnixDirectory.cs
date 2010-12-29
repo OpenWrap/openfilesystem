@@ -28,7 +28,7 @@ namespace OpenFileSystem.IO.FileSystems.Local.Unix
             get
             {
                 if (IsHardLink)
-                    throw new NotImplementedException("Dunno how to get that from Mono.Unix");
+                    return new UnixDirectory(((UnixSymbolicLinkInfo)UnixDirectoryInfo).GetContents().FullName);
                 return this;
             }
         }
