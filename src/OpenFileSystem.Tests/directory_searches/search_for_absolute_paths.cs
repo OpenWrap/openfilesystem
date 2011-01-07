@@ -15,18 +15,26 @@ namespace OpenFileSystem.Tests.directory_searches
     [TestFixture(typeof(TestLocalFileSystem))]
     public class search_for_absolute_paths<T> : context<T> where T : IFileSystem, new()
     {
-        [TestCase(@"c:\test\", @"c:\*")]
-        [TestCase(@"c:\test\", @"c:\test\")]
-        [TestCase(@"c:\test\", @"c:\test")]
-        [TestCase(@"c:\", @"c:\")]
+        const string TEMPFOLDER = "CBB7E871-89FF-4F20-A58E-73EB4D2F1191";
+        [TestCase(@"c:\" + TEMPFOLDER + @"\test\", @"c:\" + TEMPFOLDER + @"\*")]
+        [TestCase(@"c:\" + TEMPFOLDER + @"\test\", @"c:\" + TEMPFOLDER + @"\test\")]
+        [TestCase(@"c:\" + TEMPFOLDER + @"\test\", @"c:\" + TEMPFOLDER + @"\test")]
+        [TestCase(@"c:\" + TEMPFOLDER + "\\", @"c:\" + TEMPFOLDER)]
         public void finds_directory(string directoryPath, string searchString)
         {
-            var fs = new InMemoryFileSystem();
-            fs.GetDirectory(directoryPath).MustExist();
+            IDirectory folder = null;
+            try
+            {
+                folder = FileSystem.GetDirectory(directoryPath).MustExist();
 
-            fs.GetCurrentDirectory().Directories(searchString, SearchScope.CurrentOnly)
-                .ShouldHaveCountOf(1)
-                .First().Path.FullPath.ShouldBe(directoryPath);
+                FileSystem.GetCurrentDirectory().Directories(searchString, SearchScope.CurrentOnly)
+                    .ShouldHaveCountOf(1)
+                    .First().Path.FullPath.ShouldBe(directoryPath);
+            }
+            finally
+            {
+                folder.Delete();
+            }
         }
     }
 }

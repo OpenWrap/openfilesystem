@@ -16,6 +16,9 @@ namespace OpenFileSystem.Tests.directory_searches
     [TestFixture("c:\\path\\folder\\", "path\\**\\**\\folder")]
     [TestFixture("c:\\path\\folder\\", "p*\\f*")]
     [TestFixture("c:\\path\\folder\\", "path\\f*")]
+    [TestFixture("c:\\path\\folder\\", "*\\f*")]
+    [TestFixture("c:\\path\\folder\\", "path\\**\\*")]
+    [TestFixture("c:\\path\\folder\\", "c:\\path\\folder\\")]
     public class recursive_directory_search : file_search_context
     {
         readonly string _existingDirectory;
@@ -34,4 +37,5 @@ namespace OpenFileSystem.Tests.directory_searches
             Directories.ShouldHaveCountOf(1).First().Path.FullPath.ShouldBe(_existingDirectory);
         }
     }
+
 }

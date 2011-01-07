@@ -82,7 +82,16 @@ namespace OpenFileSystem.IO.FileSystems.Local
 
         public virtual IEnumerable<IDirectory> Directories(string filter, SearchScope scope)
         {
+            filter = filter.Trim();
+            if (filter.EndsWith(System.IO.Path.DirectorySeparatorChar + "") || filter.EndsWith(System.IO.Path.AltDirectorySeparatorChar + ""))
+                filter = filter.Substring(0, filter.Length - 1);
             DirectoryInfo.Refresh();
+            if (System.IO.Path.IsPathRooted(filter))
+            {
+                var root = System.IO.Path.GetPathRoot(filter);
+                filter = filter.Substring(root.Length);
+                return LocalFileSystem.Instance.GetDirectory(root).Directories(filter, scope);
+            }
             return DirectoryInfo.GetDirectories(filter, scope == SearchScope.CurrentOnly ? SearchOption.TopDirectoryOnly : SearchOption.AllDirectories)
                 .Select(x => (IDirectory)CreateDirectory(x));
         }
@@ -95,6 +104,10 @@ namespace OpenFileSystem.IO.FileSystems.Local
 
         public IEnumerable<IFile> Files(string filter, SearchScope scope)
         {
+            filter = filter.Trim();
+            if (filter.EndsWith(System.IO.Path.DirectorySeparatorChar + "") || filter.EndsWith(System.IO.Path.AltDirectorySeparatorChar + ""))
+                filter += System.IO.Path.DirectorySeparatorChar + "*";
+
             DirectoryInfo.Refresh();
             return DirectoryInfo.GetFiles(filter, scope == SearchScope.CurrentOnly ? SearchOption.TopDirectoryOnly : SearchOption.AllDirectories)
                                 .Select(x => new LocalFile(x.FullName, CreateDirectory))

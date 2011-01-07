@@ -8,7 +8,7 @@ namespace OpenFileSystem.Tests.contexts
 {
         public abstract class file_search_context : OpenWrap.Testing.context
         {
-            protected IFileSystem FileSystem;
+            protected InMemoryFileSystem FileSystem;
             protected IEnumerable<IFile> Files;
             protected IEnumerable<IDirectory> Directories;
 
@@ -33,6 +33,11 @@ namespace OpenFileSystem.Tests.contexts
             protected void given_directory(string directory)
             {
                 FileSystem.GetDirectory(directory).MustExist();
+            }
+
+            protected void given_currentDirectory(string currentDirectory)
+            {
+                FileSystem.CurrentDirectory = currentDirectory;
             }
         }
 }

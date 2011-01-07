@@ -33,6 +33,7 @@ namespace OpenFileSystem.IO
         public static IEnumerable<IFile> Files(this IDirectory directory, string filter)
         {
             var pathSegments = GetFilterPaths(filter).ToList();
+
             if (pathSegments.Count() == 1)
                 return directory.Files(filter, SearchScope.CurrentOnly);
 
