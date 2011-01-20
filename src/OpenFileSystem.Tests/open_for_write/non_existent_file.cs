@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using OpenFileSystem.IO;
+using OpenFileSystem.Tests.contexts;
 using OpenWrap.Testing;
 using OpenWrap.Tests.IO;
 
@@ -12,7 +13,7 @@ namespace OpenFileSystem.Tests.open_for_write
 {
     [TestFixture(typeof(TestInMemoryFileSystem))]
     [TestFixture(typeof(TestLocalFileSystem))]
-    public class non_existent_file<T> : context<T> where T : IFileSystem, new()
+    public class non_existent_file<T> : files<T> where T : IFileSystem, new()
     {
 
         public non_existent_file()

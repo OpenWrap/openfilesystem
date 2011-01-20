@@ -62,12 +62,6 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
             return ownerFolder.GetFile(pathSegments.Last());
         }
 
-        bool DirectoryExists(string resolvedDirectoryPath)
-        {
-            throw new InvalidOperationException();
-
-        }
-
         public Path GetPath(string path)
         {
             return new Path(path);

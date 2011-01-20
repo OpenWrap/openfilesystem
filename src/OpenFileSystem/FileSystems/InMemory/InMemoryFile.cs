@@ -60,6 +60,9 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
         public void CopyTo(IFileSystemItem where)
         {
             VerifyExists();
+            var currentLock = _lock;
+            if (currentLock != null && currentLock.Value != FileShare.Read && currentLock.Value != FileShare.ReadWrite)
+                throw new IOException("Cannot copy file as someone opened it without shared read access");
             if (where is InMemoryFile)
             {
                 if (where.Exists)
@@ -73,6 +76,8 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
         }
         public void MoveTo(IFileSystemItem newFileName)
         {
+            var currentLock = _lock;
+            if (_lock != null) throw new IOException("File is locked, please try again later.");
             CopyTo(newFileName);
             Delete();
         }

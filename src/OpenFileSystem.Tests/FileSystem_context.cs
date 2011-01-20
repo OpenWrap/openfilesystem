@@ -23,8 +23,7 @@ namespace OpenWrap.Tests.IO
     }
 
 
-    [TestFixture(typeof(TestInMemoryFileSystem))]
-    [TestFixture(typeof(TestLocalFileSystem))]
+    
     public abstract class file_system_ctxt<T> : context where T : IFileSystem, new()
     {
         public file_system_ctxt()
@@ -75,6 +74,8 @@ namespace OpenWrap.Tests.IO
                 TempDir.Dispose();
         }
     }
+    [TestFixture(typeof(TestInMemoryFileSystem))]
+    [TestFixture(typeof(TestLocalFileSystem))]
     public class file_system<T> : file_system_ctxt<T> where T : IFileSystem, new()
     {
         [Test]

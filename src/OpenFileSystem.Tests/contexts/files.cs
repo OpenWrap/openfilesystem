@@ -4,9 +4,9 @@ using OpenFileSystem.IO;
 using OpenWrap.Testing;
 using OpenWrap.Tests.IO;
 
-namespace OpenFileSystem.Tests.open_for_write
+namespace OpenFileSystem.Tests.contexts
 {
-    public class context<T> : file_system_ctxt<T> where T : IFileSystem, new()
+    public abstract class files<T> : file_system_ctxt<T> where T : IFileSystem, new()
     {
         protected IFile write_to_file(byte[] value = null, FileMode mode = FileMode.Create, FileAccess access = FileAccess.ReadWrite, FileShare share = FileShare.None)
         {
