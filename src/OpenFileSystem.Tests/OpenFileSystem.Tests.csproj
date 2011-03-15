@@ -62,6 +62,7 @@
     <Compile Include="directory_searches\search_for_absolute_paths.cs" />
     <Compile Include="FileSystem_context.cs" />
     <Compile Include="InMemoryFileSystem_specs.cs" />
+    <Compile Include="moving\directories.cs" />
     <Compile Include="open_for_write\existing_file.cs" />
     <Compile Include="open_for_write\non_existent_file.cs" />
     <Compile Include="open_for_write\open_behavior_is_same.cs" />

@@ -146,8 +146,10 @@ namespace OpenFileSystem.IO.FileSystems.Local
 
         public void MoveTo(IFileSystemItem newFileName)
         {
+            var oldPath = Path.FullPath;
             DirectoryInfo.Refresh();
             DirectoryInfo.MoveTo(newFileName.Path.FullPath);
+            DirectoryInfo = new DirectoryInfo(oldPath);
         }
         public void CopyTo(IFileSystemItem newItem)
         {
@@ -156,6 +158,7 @@ namespace OpenFileSystem.IO.FileSystems.Local
             DirectoryInfo.Refresh();
             if (!DirectoryInfo.Exists)
                 DirectoryInfo.Create();
+            destDir.MustExist();
             foreach (var file in Files())
                 file.CopyTo(newItem);
             foreach(var directory in Directories())
