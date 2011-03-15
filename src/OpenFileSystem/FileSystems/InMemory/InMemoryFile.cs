@@ -28,8 +28,8 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
             Path = new Path(filePath);
             Name = System.IO.Path.GetFileName(filePath);
             NameWithoutExtension = System.IO.Path.GetFileNameWithoutExtension(filePath);
-            
-            LastModifiedTimeUtc = DateTime.Now;
+
+            LastModifiedTimeUtc = null;
         }
 
         FileShare? _lock = null;
@@ -49,8 +49,10 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
         {
             if (Exists) return;
             Exists = true;
+            LastModifiedTimeUtc = DateTimeOffset.UtcNow;
             if (Parent != null && !Parent.Exists)
                 Parent.Create();
+
             if (Parent != null)
             {
                 ((InMemoryFileSystem)Parent.FileSystem).Notifier.NotifyCreation(this);
@@ -77,7 +79,7 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
         public void MoveTo(IFileSystemItem newFileName)
         {
             var currentLock = _lock;
-            if (_lock != null) throw new IOException("File is locked, please try again later.");
+            if (currentLock != null) throw new IOException("File is locked, please try again later.");
             CopyTo(newFileName);
             Delete();
         }
@@ -121,10 +123,11 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
             }
         }
 
-        public DateTime? LastModifiedTimeUtc
+        DateTimeOffset? _lastModifiedTimeUtc;
+        public DateTimeOffset? LastModifiedTimeUtc
         {
-            get;
-            private set;
+            get { return _lastModifiedTimeUtc; }
+            set { _lastModifiedTimeUtc = value; }
         }
 
         public Stream Open(FileMode fileMode, FileAccess fileAccess, FileShare fileShare)

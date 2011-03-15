@@ -75,10 +75,12 @@ namespace OpenFileSystem.IO.FileSystems.Local
             get { return new FileInfo(_filePath).Length; }
         }
 
-        public DateTime? LastModifiedTimeUtc
+        public DateTimeOffset? LastModifiedTimeUtc
         {
-            get { return Exists ? new FileInfo(_filePath).LastWriteTimeUtc : (DateTime?)null; }
+            get { return Exists ? new DateTimeOffset(new FileInfo(_filePath).LastWriteTimeUtc, TimeSpan.Zero) : (DateTimeOffset?)null; }
+            set { if (value != null) new FileInfo(_filePath).LastWriteTimeUtc = value.Value.UtcDateTime; }
         }
+
         public override string ToString()
         {
             return Path.FullPath;

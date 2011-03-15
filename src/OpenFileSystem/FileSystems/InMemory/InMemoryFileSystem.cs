@@ -43,7 +43,7 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
                     (current, segment) => current.GetDirectory(segment));
         }
 
-        string EnsureTerminatedByDirectorySeparator(string directoryPath)
+        static string EnsureTerminatedByDirectorySeparator(string directoryPath)
         {
             return directoryPath.EndsWith(System.IO.Path.DirectorySeparatorChar + string.Empty)
                    || directoryPath.EndsWith(System.IO.Path.AltDirectorySeparatorChar + string.Empty)

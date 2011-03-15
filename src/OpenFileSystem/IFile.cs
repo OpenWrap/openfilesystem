@@ -8,7 +8,7 @@ namespace OpenFileSystem.IO
         string NameWithoutExtension { get; }
         string Extension { get; }
         long Size { get; }
-        DateTime? LastModifiedTimeUtc { get; }
+        DateTimeOffset? LastModifiedTimeUtc { get; set; }
         Stream Open(FileMode fileMode, FileAccess fileAccess, FileShare fileShare);
     }
 }
