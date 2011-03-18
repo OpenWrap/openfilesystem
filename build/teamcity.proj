@@ -8,7 +8,7 @@
 
     <!-- Initializes the environment and remote repositories -->
     
-    <InitializeOpenWrap CurrentDirectory="$(MSBuildProjectDirectory)\..">
+    <InitializeOpenWrap CurrentDirectory="$(MSBuildProjectDirectory)\.."  CurrentProjectFile="$(MSBuildProjectFullPath)">
       <Output TaskParameter="Name" PropertyName="OpenWrap-PackageName" />
     </InitializeOpenWrap>
 
