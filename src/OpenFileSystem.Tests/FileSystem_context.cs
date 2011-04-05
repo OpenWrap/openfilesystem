@@ -78,18 +78,39 @@ namespace OpenWrap.Tests.IO
     [TestFixture(typeof(TestLocalFileSystem))]
     public class file_system<T> : file_system_ctxt<T> where T : IFileSystem, new()
     {
-        [Test]
-        public void receives_creation_notification()
+        [TestCase("*")]
+        [TestCase("*.txt")]
+        public void receives_creation_notification_for_one(string filter)
         {
             using (var tempDir = FileSystem.CreateTempDirectory())
             {
                 string filePath = null;
-                using (tempDir.FileChanges(created: f => filePath = f.Path.FullPath))
+                using (tempDir.FileChanges(filter: filter, created: f => filePath = f.Path.FullPath))
                 {
 
                     tempDir.GetFile("hello.txt").MustExist();
                     Thread.Sleep(TimeSpan.FromSeconds(1));
                     filePath.ShouldBe(tempDir.Path.Combine("hello.txt").FullPath);
+                }
+            }
+        }
+        [TestCase("*")]
+        [TestCase("*.txt")]
+        public void receives_creation_notification_for_two(string filter)
+        {
+            using (var tempDir = FileSystem.CreateTempDirectory())
+            {
+                string filePath = null;
+                string filePathModified = null;
+                using (tempDir.FileChanges(filter: filter, 
+                created: f => filePath = f.Path.FullPath,
+                modified: f=> filePathModified = f.Path.FullPath))
+                {
+
+                    tempDir.GetFile("hello.txt").MustExist();
+                    Thread.Sleep(TimeSpan.FromSeconds(1));
+                    filePath.ShouldBe(tempDir.Path.Combine("hello.txt").FullPath);
+                    filePathModified.ShouldBe(tempDir.Path.Combine("hello.txt").FullPath);
                 }
             }
         }

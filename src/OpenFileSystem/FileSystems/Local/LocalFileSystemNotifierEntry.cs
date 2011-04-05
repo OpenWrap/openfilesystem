@@ -65,7 +65,7 @@ namespace OpenFileSystem.IO.FileSystems.Local
         }
         bool IsWatching(WatcherChangeTypes changeType)
         {
-            return (_identity.ChangeTypes | changeType) == changeType;
+            return (_identity.ChangeTypes & changeType) == changeType;
         }
         void Activate()
         {
