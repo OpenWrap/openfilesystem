@@ -6,10 +6,29 @@ using System.Text;
 using NUnit.Framework;
 using OpenFileSystem.IO;
 using OpenFileSystem.IO.FileSystems.InMemory;
+using OpenFileSystem.IO.FileSystems.Local;
 using OpenWrap.Testing;
 
 namespace OpenFileSystem.Tests
 {
+    public class in_memory_unc_paths : context.in_memory_file_system
+    {
+        [Test]
+        public void parent_is_correct()
+        {
+            new InMemoryFileSystem().GetDirectory(@"\\server\dir\file")
+                .Parent.ShouldNotBeNull()
+                .Path.ToString().ShouldBe(@"\\server\dir");
+        }
+        [Test]
+        public void test()
+        {
+            LocalFileSystem.Instance.GetDirectory(@"\\lon-fs04\data\Applications")
+                .Check(_=>_.Exists.ShouldBeTrue())
+                .Parent.ShouldNotBeNull()
+                .Path.ToString().ShouldBe(@"\\lon-fs04\data");
+        }
+    }
     public class in_mem_specification : context.in_memory_file_system
     {
         [Test]

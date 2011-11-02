@@ -14,10 +14,13 @@ namespace OpenFileSystem.IO
             FullPath = fullPath;
             
             IsRooted = System.IO.Path.IsPathRooted(fullPath);
+            IsUnc = IsUncPath(fullPath);
 
             Segments = GenerateSegments(fullPath);
             _normalizedPath = NormalizePath(fullPath);
         }
+
+        public bool IsUnc { get; private set; }
 
         public string DirectoryName { get { return IsDirectoryPath ? _normalizedPath : System.IO.Path.GetDirectoryName(FullPath);}}
         public bool IsRooted { get; private set; }
@@ -50,7 +53,17 @@ namespace OpenFileSystem.IO
 
         static string NormalizePath(string fullPath)
         {
-            return string.Join("" + System.IO.Path.DirectorySeparatorChar, GenerateSegments(fullPath).ToArray());
+            var segmentPath = string.Join("" + System.IO.Path.DirectorySeparatorChar, GenerateSegments(fullPath).ToArray());
+            return System.IO.Path.IsPathRooted(fullPath) && IsUncPath(fullPath)
+                       ? new string(System.IO.Path.DirectorySeparatorChar, 2) + segmentPath
+                       : segmentPath;
+        }
+
+        static bool IsUncPath(string fullPath)
+        {
+            return (
+                (fullPath.StartsWith("\\\\") && fullPath.Length > 2 && fullPath[2] != '?')
+                || fullPath.StartsWith("//"));
         }
 
         public override bool Equals(object obj)
