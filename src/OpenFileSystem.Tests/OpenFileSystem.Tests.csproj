@@ -69,6 +69,7 @@
     <Compile Include="paths\file_names.cs" />
     <Compile Include="contexts\file_search_context.cs" />
     <Compile Include="file_searches\recursive_search_finds_directory.cs" />
+    <Compile Include="path_specification.cs" />
     <Compile Include="renaming_files\locked_file.cs" />
     <Compile Include="StreamExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -34,12 +34,18 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
         }
         public IDirectory GetDirectory(string directoryPath)
         {
+            
             directoryPath = EnsureTerminatedByDirectorySeparator(directoryPath);
+            
             var resolvedDirectoryPath = System.IO.Path.GetFullPath(System.IO.Path.Combine(CurrentDirectory,directoryPath));
+
+            var path = new Path(resolvedDirectoryPath);
+            
             var pathSegments = new Path(resolvedDirectoryPath).Segments;
+            var root = pathSegments.First();
             return pathSegments
                 .Skip(1)
-                .Aggregate((IDirectory)GetRoot(pathSegments.First()),
+                .Aggregate((IDirectory)GetRoot(path.IsUnc ? string.Format("{0}{0}{1}", System.IO.Path.DirectorySeparatorChar, root) : root),
                     (current, segment) => current.GetDirectory(segment));
         }
 
