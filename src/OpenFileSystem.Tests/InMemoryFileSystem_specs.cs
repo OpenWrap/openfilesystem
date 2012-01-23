@@ -20,14 +20,6 @@ namespace OpenFileSystem.Tests
                 .Parent.ShouldNotBeNull()
                 .Path.ToString().ShouldBe(@"\\server\dir");
         }
-        [Test]
-        public void test()
-        {
-            LocalFileSystem.Instance.GetDirectory(@"\\lon-fs04\data\Applications")
-                .Check(_=>_.Exists.ShouldBeTrue())
-                .Parent.ShouldNotBeNull()
-                .Path.ToString().ShouldBe(@"\\lon-fs04\data");
-        }
     }
     public class in_mem_specification : context.in_memory_file_system
     {
