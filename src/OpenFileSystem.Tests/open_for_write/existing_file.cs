@@ -63,6 +63,7 @@ namespace OpenFileSystem.Tests.open_for_write
             {
                 s.Write(new byte[20000], 0, 20000);
             }
+            file.ShouldBe(new byte[20000]);
         }
 
     }
