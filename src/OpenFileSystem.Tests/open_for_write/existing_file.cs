@@ -55,6 +55,15 @@ namespace OpenFileSystem.Tests.open_for_write
             Executing(() => file.Write(1, mode: FileMode.CreateNew))
                 .ShouldThrow<IOException>();
         }
+        [Test]
+        public void large_data_is_written()
+        {
+            file = write_to_file();
+            using (var s = file.OpenWrite())
+            {
+                s.Write(new byte[20000], 0, 20000);
+            }
+        }
 
     }
 }
