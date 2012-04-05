@@ -333,7 +333,7 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
                     _contentLength = offset;
                 if (_content.Length < _contentLength)
                 {
-                    var buffer = new byte[_content.Length * 2];
+                    var buffer = new byte[_contentLength * 2];
                     Buffer.BlockCopy(_content, 0, buffer, 0, _content.Length);
                     _content = buffer;
                 }
