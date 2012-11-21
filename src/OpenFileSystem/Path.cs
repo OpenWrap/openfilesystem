@@ -1,33 +1,50 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using SPath = System.IO.Path;
 
 namespace OpenFileSystem.IO
 {
     public class Path : IEquatable<Path>
     {
-        readonly string _normalizedPath;
-
         public Path(string fullPath)
         {
             if (string.IsNullOrEmpty(fullPath)) throw new ArgumentNullException("fullPath");
             FullPath = fullPath;
-            
-            IsRooted = System.IO.Path.IsPathRooted(fullPath);
-            IsUnc = IsUncPath(fullPath);
+            string hostName;
+            IsUnc = IsUncPath(fullPath, out hostName);
+            IsRooted = IsUnc || SPath.IsPathRooted(fullPath);
+            HostName = hostName;
 
-            Segments = GenerateSegments(fullPath);
-            _normalizedPath = NormalizePath(fullPath);
+            Segments = GenerateSegments(fullPath, IsUnc);
         }
+
 
         public bool IsUnc { get; private set; }
 
-        public string DirectoryName { get { return IsDirectoryPath ? _normalizedPath : System.IO.Path.GetDirectoryName(FullPath);}}
+        public string DirectoryName
+        {
+            get
+            {
+                return IsDirectoryPath ? FullPath : EnsureTrailingSlash(System.IO.Path.GetDirectoryName(FullPath));
+            }
+        }
+        static string EnsureTrailingSlash(string path)
+        {
+            if (path[path.Length - 1] == SPath.DirectorySeparatorChar ||
+                path[path.Length - 1] == SPath.AltDirectorySeparatorChar)
+                return path;
+            return path + SPath.DirectorySeparatorChar;
+        }
+
         public bool IsRooted { get; private set; }
 
-        static IEnumerable<string> GenerateSegments(string path)
+        static IEnumerable<string> GenerateSegments(string path, bool unc)
         {
-            return path.Split(new[] { System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar },StringSplitOptions.RemoveEmptyEntries).ToList().AsReadOnly();
+            var separator = unc ? new[]{ path[0] } : new[] { System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar };
+            IEnumerable<string> components = path.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+            if (unc) components = components.Skip(1);
+            return components.ToList().AsReadOnly();
         }
 
         public string FullPath { get; private set; }
@@ -43,27 +60,30 @@ namespace OpenFileSystem.IO
             var combinedPath = paths.Aggregate(FullPath, System.IO.Path.Combine);
             return new Path(combinedPath);
         }
-
+        
         public bool Equals(Path other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return NormalizePath(other.FullPath).Equals(_normalizedPath, StringComparison.OrdinalIgnoreCase);
+            return other.FullPath.Equals(FullPath);
         }
 
-        static string NormalizePath(string fullPath)
+        static bool IsUncPath(string fullPath, out string hostName)
         {
-            var segmentPath = string.Join("" + System.IO.Path.DirectorySeparatorChar, GenerateSegments(fullPath).ToArray());
-            return System.IO.Path.IsPathRooted(fullPath) && IsUncPath(fullPath)
-                       ? new string(System.IO.Path.DirectorySeparatorChar, 2) + segmentPath
-                       : segmentPath;
-        }
+            hostName = "localhost";
+            char sep = '\0';
+            if (fullPath.StartsWith("\\\\") && fullPath.Length > 2 && fullPath[2] != '?')
+                sep = '\\';
+            else if (fullPath.StartsWith("//"))
+                sep = '/';
+            if (sep == '\0') return false;
 
-        static bool IsUncPath(string fullPath)
-        {
-            return (
-                (fullPath.StartsWith("\\\\") && fullPath.Length > 2 && fullPath[2] != '?')
-                || fullPath.StartsWith("//"));
+            var serverNameSeparator = fullPath.IndexOf(sep, 2);
+            if (serverNameSeparator == -1) return false;
+
+            var validUnc = fullPath.Length > serverNameSeparator+1;
+            if (validUnc) hostName = fullPath.Substring(2, serverNameSeparator-2);
+            return validUnc;
         }
 
         public override bool Equals(object obj)
@@ -76,11 +96,11 @@ namespace OpenFileSystem.IO
 
         public override int GetHashCode()
         {
-            return (_normalizedPath != null ? _normalizedPath.GetHashCode() : 0);
+            return (FullPath != null ? FullPath.GetHashCode() : 0);
         }
         public override string ToString()
         {
-            return _normalizedPath;
+            return FullPath;
         }
         public static bool operator ==(Path left, Path right)
         {
@@ -91,17 +111,21 @@ namespace OpenFileSystem.IO
         {
             return !Equals(left, right);
         }
-
+        
         public static implicit operator string(Path path)
         {
             return path.ToString();
         }
+
+        public string HostName { get; private set; }
+
         public Path MakeRelative(Path path)
         {
-            if (!IsRooted)
-                return this;
-            List<string> leftOverSegments = new List<string>();
-            int relativeSegmentCount = 0;
+            if (!IsRooted || !path.IsRooted)
+                throw new InvalidOperationException("Cannot make relative paths without absolute paths!");
+ 
+            var leftOverSegments = new List<string>();
+            var relativeSegmentCount = 0;
 
 
             var thisEnum = Segments.GetEnumerator();
@@ -114,15 +138,13 @@ namespace OpenFileSystem.IO
                 thisHasValue = thisEnum.MoveNext();
                 rootHasValue = rootEnum.MoveNext();
 
-                if (thisHasValue && rootHasValue)
+                if (thisHasValue && rootHasValue && thisEnum.Current != null && rootEnum.Current != null)
                 {
                     if (thisEnum.Current.Equals(rootEnum.Current, StringComparison.OrdinalIgnoreCase))
                         continue;
                 }
                 if (thisHasValue)
-                {
                     leftOverSegments.Add(thisEnum.Current);
-                }
                 if (rootHasValue)
                     relativeSegmentCount++;
             } while (thisHasValue || rootHasValue);

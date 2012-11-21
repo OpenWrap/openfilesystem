@@ -1,14 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using NUnit.Framework;
 using OpenFileSystem.IO;
-using OpenWrap.Testing;
-using OpenWrap.Tests.IO;
 
-namespace OpenFileSystem.Tests.writing_content
+namespace writing_content
 {
 
     [TestFixture(typeof(TestInMemoryFileSystem))]

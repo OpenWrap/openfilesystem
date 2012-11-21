@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using NUnit.Framework;
 using OpenFileSystem.IO;
-using OpenFileSystem.Tests.contexts;
-using OpenWrap.Testing;
-using OpenWrap.Tests.IO;
+using contexts;
 
-namespace OpenFileSystem.Tests.renaming_files
+namespace renaming_files
 {
     [TestFixture(typeof(TestInMemoryFileSystem))]
     [TestFixture(typeof(TestLocalFileSystem))]

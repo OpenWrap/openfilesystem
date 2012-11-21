@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using NUnit.Framework;
 using OpenFileSystem.IO;
 using OpenFileSystem.IO.FileSystems.InMemory;
 
-namespace OpenFileSystem.Tests.contexts
+namespace contexts
 {
-        public abstract class file_search_context : OpenWrap.Testing.context
+        public abstract class file_search_context : context
         {
             protected InMemoryFileSystem FileSystem;
             protected IEnumerable<IFile> Files;

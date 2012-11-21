@@ -4,11 +4,10 @@ using NUnit.Framework;
 using OpenFileSystem.IO;
 using OpenFileSystem.IO.FileSystems.InMemory;
 using OpenFileSystem.IO.FileSystems.Local;
-using OpenWrap.Testing;
 
-namespace OpenFileSystem.Tests.open_for_write
+namespace open_for_write
 {
-    public class open_behavior_is_same : OpenWrap.Testing.context
+    public class open_behavior_is_same : context
     {
         [Test]
         public void existing_file(

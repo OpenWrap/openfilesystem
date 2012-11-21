@@ -13,25 +13,22 @@
 using System;
 using NUnit.Framework;
 
-namespace OpenWrap.Testing
+[TestFixture]
+public abstract class context
 {
-    [TestFixture]
-    public class context
+    [SetUp]
+    protected virtual void SetUp()
     {
-        [SetUp]
-        protected virtual void SetUp()
-        {
-        }
+    }
 
-        [TearDown]
-        protected virtual void TearDown()
-        {
-        }
+    [TearDown]
+    protected virtual void TearDown()
+    {
+    }
 
-        public Action Executing(Action action)
-        {
-            return action;
-        }
+    public Action Executing(Action action)
+    {
+        return action;
     }
 }
 

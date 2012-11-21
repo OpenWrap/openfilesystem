@@ -9,18 +9,19 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
     public class InMemoryFileSystem : IFileSystem
     {
         readonly object _syncRoot = new object();
+
         public Dictionary<string, InMemoryDirectory> Directories { get; private set; }
 
         public InMemoryFileSystem()
         {
             Directories = new Dictionary<string, InMemoryDirectory>(StringComparer.OrdinalIgnoreCase);
-            CurrentDirectory = @"c:\";
+            CurrentDirectory = Environment.CurrentDirectory;
             Notifier = new InMemoryFileSystemNotifier();
         }
 
         public InMemoryFileSystemNotifier Notifier { get; set; }
 
-        InMemoryDirectory GetRoot(string path)
+        IDirectory GetRoot(string path)
         {
             InMemoryDirectory directory;
             lock (Directories)
@@ -40,12 +41,22 @@ namespace OpenFileSystem.IO.FileSystems.InMemory
             var resolvedDirectoryPath = System.IO.Path.GetFullPath(System.IO.Path.Combine(CurrentDirectory,directoryPath));
 
             var path = new Path(resolvedDirectoryPath);
+            var rootPath = System.IO.Path.GetPathRoot(path);
+            if (!path.IsUnc &&
+                rootPath.Length > 0 && 
+                (rootPath[rootPath.Length-1] == System.IO.Path.DirectorySeparatorChar ||
+                 rootPath[rootPath.Length-1] == System.IO.Path.AltDirectorySeparatorChar))
+                rootPath = rootPath.Substring(0,rootPath.Length - 1);
+
+            var root = GetRoot(rootPath);
+
             
-            var pathSegments = new Path(resolvedDirectoryPath).Segments;
-            var root = pathSegments.First();
+            IEnumerable<string> pathSegments = new Path(resolvedDirectoryPath).Segments;
+
+            if (path.IsUnc || rootPath == pathSegments.First())
+                pathSegments = pathSegments.Skip(1);
             return pathSegments
-                .Skip(1)
-                .Aggregate((IDirectory)GetRoot(path.IsUnc ? string.Format("{0}{0}{1}", System.IO.Path.DirectorySeparatorChar, root) : root),
+                .Aggregate(root,
                     (current, segment) => current.GetDirectory(segment));
         }
 

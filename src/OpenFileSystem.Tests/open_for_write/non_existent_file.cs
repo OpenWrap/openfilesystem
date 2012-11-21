@@ -1,15 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.IO;
 using NUnit.Framework;
 using OpenFileSystem.IO;
-using OpenFileSystem.Tests.contexts;
-using OpenWrap.Testing;
-using OpenWrap.Tests.IO;
+using contexts;
 
-namespace OpenFileSystem.Tests.open_for_write
+namespace open_for_write
 {
     [TestFixture(typeof(TestInMemoryFileSystem))]
     [TestFixture(typeof(TestLocalFileSystem))]

@@ -1,10 +1,8 @@
 ﻿using System;
 using NUnit.Framework;
 using OpenFileSystem.IO;
-using OpenWrap.Testing;
-using OpenWrap.Tests.IO;
 
-namespace OpenFileSystem.Tests.moving
+namespace moving
 {
     [TestFixture(typeof(TestInMemoryFileSystem))]
     [TestFixture(typeof(TestLocalFileSystem))]
@@ -13,7 +11,7 @@ namespace OpenFileSystem.Tests.moving
         IDirectory _sourceDir;
         IDirectory _destDir;
         string _sourcePath;
-        string _destPath;
+        //string _destPath;
 
         public directories()
         {
@@ -23,7 +21,7 @@ namespace OpenFileSystem.Tests.moving
             _sourceDir.GetFile("test.txt").MustExist();
 
             _destDir = tempDir.GetDirectory("temp2");
-            _destPath = _destDir.Path.FullPath;
+            //_destPath = _destDir.Path.FullPath;
             _sourceDir.MoveTo(_destDir);
         }
 

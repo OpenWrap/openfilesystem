@@ -1,24 +1,21 @@
 ﻿using System;
 using System.Linq;
 using NUnit.Framework;
-using OpenFileSystem.IO;
-using OpenWrap.Testing;
-using OpenWrap.Tests.IO;
 
-namespace OpenFileSystem.Tests.file_searches
+namespace file_searches
 {
-    [TestFixture("c:\\path\\file.txt", "c:\\**\\file.txt")]
-    [TestFixture("c:\\path\\file.txt", "c:\\path\\**\\file.txt")]
-    [TestFixture("c:\\path\\file.txt", "c:\\path\\**\\**\\file.txt")]
-    [TestFixture("c:\\path\\file.txt", "c:\\p*\\*.txt")]
-    [TestFixture("c:\\path\\file.txt", "c:\\path\\*.txt")]
-    [TestFixture("c:\\path\\file.txt", "**\\file.txt")]
-    [TestFixture("c:\\path\\file.txt", "path\\**\\file.txt")]
-    [TestFixture("c:\\path\\file.txt", "path\\**\\**\\file.txt")]
-    [TestFixture("c:\\path\\file.txt", "p*\\*.txt")]
-    [TestFixture("c:\\path\\file.txt", "path\\*.txt")]
-    [TestFixture("c:\\path\\file.txt", "c:\\path\\file.txt")]
-    [TestFixture("c:\\path\\file.txt", "c:\\path\\file.txt", "c:\\path\\")]
+    [TestFixture("$TEMP$path/file.txt", "$TEMP$**/file.txt")]
+    [TestFixture("$TEMP$path/file.txt", "$TEMP$path/**/file.txt")]
+    [TestFixture("$TEMP$path/file.txt", "$TEMP$path/**/**/file.txt")]
+    [TestFixture("$TEMP$path/file.txt", "$TEMP$p*/*.txt")]
+    [TestFixture("$TEMP$path/file.txt", "$TEMP$path/*.txt")]
+    [TestFixture("$TEMP$path/file.txt", "**/file.txt", "$TEMP$")]
+    [TestFixture("$TEMP$path/file.txt", "path/**/file.txt", "$TEMP$")]
+    [TestFixture("$TEMP$path/file.txt", "path/**/**/file.txt", "$TEMP$")]
+    [TestFixture("$TEMP$path/file.txt", "p*/*.txt", "$TEMP$")]
+    [TestFixture("$TEMP$path/file.txt", "path/*.txt", "$TEMP$")]
+    [TestFixture("$TEMP$path/file.txt", "$TEMP$path/file.txt")]
+    [TestFixture("$TEMP$path/file.txt", "$TEMP$path/file.txt", "$TEMP$path/")]
     public class recursive_file_search : contexts.file_search_context
     {
         readonly string existingFile;
@@ -29,6 +26,10 @@ namespace OpenFileSystem.Tests.file_searches
 
         public recursive_file_search(string file, string searchSpec, string currentDirectory)
         {
+            file = OS.MakeNative(file);
+            searchSpec = OS.MakeNative(searchSpec);
+            if (currentDirectory != null) currentDirectory = OS.MakeNative(currentDirectory);
+
             existingFile = file;
             if (currentDirectory != null)
                 given_currentDirectory(currentDirectory);

@@ -1,16 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using NUnit.Framework;
 using OpenFileSystem.IO;
-using OpenFileSystem.IO.FileSystems.InMemory;
-using OpenFileSystem.Tests.contexts;
-using OpenFileSystem.Tests.open_for_write;
-using OpenWrap.Testing;
-using OpenWrap.Tests.IO;
+using contexts;
 
-namespace OpenFileSystem.Tests.directory_searches
+namespace directory_searches
 {
     [TestFixture(typeof(TestInMemoryFileSystem))]
     [TestFixture(typeof(TestLocalFileSystem))]

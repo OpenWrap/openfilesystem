@@ -1,31 +1,41 @@
 ﻿using System;
 using System.Linq;
 using NUnit.Framework;
-using OpenFileSystem.Tests.contexts;
-using OpenWrap.Testing;
+using contexts;
 
-namespace OpenFileSystem.Tests.directory_searches
+namespace directory_searches
 {
-    [TestFixture("c:\\path\\folder\\", "c:\\**\\folder")]
-    [TestFixture("c:\\path\\folder\\", "c:\\path\\**\\folder")]
-    [TestFixture("c:\\path\\folder\\", "c:\\path\\**\\**\\folder")]
-    [TestFixture("c:\\path\\folder\\", "c:\\p*\\f*")]
-    [TestFixture("c:\\path\\folder\\", "c:\\path\\f*")]
-    [TestFixture("c:\\path\\folder\\", "**\\folder")]
-    [TestFixture("c:\\path\\folder\\", "path\\**\\folder")]
-    [TestFixture("c:\\path\\folder\\", "path\\**\\**\\folder")]
-    [TestFixture("c:\\path\\folder\\", "p*\\f*")]
-    [TestFixture("c:\\path\\folder\\", "path\\f*")]
-    [TestFixture("c:\\path\\folder\\", "*\\f*")]
-    [TestFixture("c:\\path\\folder\\", "path\\**\\*")]
-    [TestFixture("c:\\path\\folder\\", "c:\\path\\folder\\")]
+    [TestFixture("$TEMP$path/folder/", "$TEMP$**/folder")]
+    [TestFixture("$TEMP$path/folder/", "$TEMP$**/folder")]
+    [TestFixture("$TEMP$path/folder/", "$TEMP$**/**/folder")]
+    [TestFixture("$TEMP$path/folder/", "$TEMP$p*/f*")]
+    [TestFixture("$TEMP$path/folder/", "$TEMP$path/f*")]
+    [TestFixture("$TEMP$path/folder/", "$TEMP$*/folder/")]
+    [TestFixture("$TEMP$path/folder/", "**/folder", "$TEMP$")]
+    [TestFixture("$TEMP$path/folder/", "path/**/folder", "$TEMP$")]
+    [TestFixture("$TEMP$path/folder/", "path/**/**/folder", "$TEMP$")]
+    [TestFixture("$TEMP$path/folder/", "p*/f*", "$TEMP$")]
+    [TestFixture("$TEMP$path/folder/", "path/f*", "$TEMP$")]
+    [TestFixture("$TEMP$path/folder/", "*/f*", "$TEMP$")]
+    [TestFixture("$TEMP$path/folder/", "path/**/*", "$TEMP$")]
     public class recursive_directory_search : file_search_context
     {
-        readonly string _existingDirectory;
+        // this test smells bad. Just sayin'
+        string existingDirectory;
 
-        public recursive_directory_search(string directory, string searchSpec)
+        public recursive_directory_search(string directory, string searchSpec) : this(directory, searchSpec, null)
         {
-            _existingDirectory = directory;
+        }
+
+        public recursive_directory_search(string directory, string searchSpec, string currentDirectory)
+        {
+            directory = OS.MakeNative(directory);
+            searchSpec = OS.MakeNative(searchSpec);
+
+            existingDirectory = directory;
+
+            if (currentDirectory != null) given_currentDirectory(OS.MakeNative(currentDirectory));
+
             given_directory(directory);
 
             when_searching_for_directories(searchSpec);
@@ -34,7 +44,7 @@ namespace OpenFileSystem.Tests.directory_searches
         [Test]
         public void file_is_found()
         {
-            Directories.ShouldHaveCountOf(1).First().Path.FullPath.ShouldBe(_existingDirectory);
+            Directories.ShouldHaveCountOf(1).First().Path.FullPath.ShouldBe(existingDirectory);
         }
     }
 

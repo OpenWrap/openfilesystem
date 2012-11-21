@@ -2,11 +2,9 @@
 using System.IO;
 using NUnit.Framework;
 using OpenFileSystem.IO;
-using OpenFileSystem.Tests.contexts;
-using OpenWrap.Testing;
-using OpenWrap.Tests.IO;
+using contexts;
 
-namespace OpenFileSystem.Tests.copying_files
+namespace copying_files
 {
     [TestFixture(typeof(TestInMemoryFileSystem))]
     [TestFixture(typeof(TestLocalFileSystem))]
