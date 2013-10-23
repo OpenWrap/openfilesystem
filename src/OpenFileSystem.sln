@@ -1,9 +1,9 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenFileSystem", "OpenFileSystem\OpenFileSystem.csproj", "{0174E0E7-B915-46A9-B3D8-D62007E55694}"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenFileSystem", "OpenFileSystem\OpenFileSystem.csproj", "{D8C36958-6ECB-4B2D-B0B1-7295FC4A3F78}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "OpenFileSystem.Tests\Tests.csproj", "{A5EB0BFC-609D-46CB-8FFB-F8F3065ABB11}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenFileSystem.Tests", "OpenFileSystem.Tests\OpenFileSystem.Tests.csproj", "{EAEA7586-AAC5-44F3-A8F2-976690E6F626}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,22 +11,16 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{0174E0E7-B915-46A9-B3D8-D62007E55694}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0174E0E7-B915-46A9-B3D8-D62007E55694}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0174E0E7-B915-46A9-B3D8-D62007E55694}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0174E0E7-B915-46A9-B3D8-D62007E55694}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A5EB0BFC-609D-46CB-8FFB-F8F3065ABB11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A5EB0BFC-609D-46CB-8FFB-F8F3065ABB11}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A5EB0BFC-609D-46CB-8FFB-F8F3065ABB11}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A5EB0BFC-609D-46CB-8FFB-F8F3065ABB11}.Release|Any CPU.Build.0 = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = OpenFileSystem\OpenFileSystem.csproj
+		{D8C36958-6ECB-4B2D-B0B1-7295FC4A3F78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8C36958-6ECB-4B2D-B0B1-7295FC4A3F78}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8C36958-6ECB-4B2D-B0B1-7295FC4A3F78}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8C36958-6ECB-4B2D-B0B1-7295FC4A3F78}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EAEA7586-AAC5-44F3-A8F2-976690E6F626}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EAEA7586-AAC5-44F3-A8F2-976690E6F626}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EAEA7586-AAC5-44F3-A8F2-976690E6F626}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EAEA7586-AAC5-44F3-A8F2-976690E6F626}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(ExtensibilityAddIns) = postSolution
-		OpenWrap.VisualStudioIntegration2010 = 1;Ensures OpenWrap initialization when a solution is opened.;OpenWrap Visual Studio Solution Add-in
 	EndGlobalSection
 EndGlobal
