@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <projectUrl>https://github.com/openrasta/openfilesystem</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>OpenFileSystem is a library for .net providing cross-platform advanced IO</description>
+    <summary />
+    <copyright>$copyright$</copyright>
+    <tags>File System, IO</tags>
+  </metadata>
+</package>
